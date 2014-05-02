@@ -22,9 +22,11 @@
      var cursors;
      var stars,star;
      var background;
-     var star;
      var boxs,box;
      var ground;
+
+     var score = 0;
+     var scoreText;
 
      var milliseconds =0;
      var seconds = 0;
@@ -35,7 +37,7 @@
          game.physics.startSystem(Phaser.Physics.ARCADE);                                   //abilito la fisica
          game.world.setBounds(0, 0, 6000, 600);                                             //imposto l'area di copertura della camera
 
-         background = game.add.tileSprite(0, 0, 800, 600, 'forest');
+         background = game.add.tileSprite(0, 0, 800, 600, 'forest');             
 
          platforms = game.add.group();                                                      //il platform contiene la terra e le due sporgenze su cui possiamo saltare
          platforms.enableBody = true;                                                       //Noi abiliteremo la fisica per tutti gli oggetti che sono stati creati in questo gruppo
@@ -44,10 +46,10 @@
          ground.body.immovable = true;                                                      // questo impedisce la caduta del ground
  
          player = game.add.sprite(0, game.world.height - 150, 'dude');
-         game.physics.arcade.enable(player);                                                //abilit‡ la fisica al player
+         game.physics.arcade.enable(player);                                                //abilit√† la fisica al player
 
          player.body.bounce.y = 0.2;                                                        /*impostiamo fisica rimbalzo*/
-         player.body.gravity.y = 300;                                                        /*impostiamo la gravita*/
+         player.body.gravity.y = 350;                                                        /*impostiamo la gravita*/
          player.body.collideWorldBounds = true;                                             /*impostiamo collisioni*/
         
 
@@ -64,9 +66,9 @@
          boxs.enableBody = true;
 
          /*Creo le stelle*/
-         for (var i = 0; i < 12; i++) {
+         for (var i = 1; i < 12; i++) {
              star = stars.create(i * 70, 0, 'star'); //creaiamo una star nel gruppo stars
-             star.body.gravity.y = 300; //impostiamo il valore della gravita
+             star.body.gravity.y = 200; //impostiamo il valore della gravita
              star.body.bounce.y = 0.7 + Math.random() * 0.2; //diamo alla stella un valore di rimbalzo casuale
          }
 
@@ -77,26 +79,27 @@
              box.body.immovable = true;
          }
 
+         scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });//stampo lo score attuale
+         scoreText.fixedToCamera = true;
 
-         background.fixedToCamera = true;                                                   //il background Ë un elemento fisso per la camera
-         ground.fixedToCamera = true;                                                       //il background Ë un elemento fisso per la camera
+         background.fixedToCamera = true;                                                   //il background √® un elemento fisso per la camera
+         ground.fixedToCamera = true;                                                       //il background √® un elemento fisso per la camera
          game.camera.follow(player);                                                        //la camera deve inseguire il giocatore
-         game.camera.deadzone = new Phaser.Rectangle(200, 600, 400, 600);
+         game.camera.deadzone = new Phaser.Rectangle(400, 600, 0, 600);
 
          classicalResize();
      }
 
      function update() {
 
-
          game.physics.arcade.collide(player,platforms); //collisione tra il personaggio e il platform.
          game.physics.arcade.collide(stars, platforms); 
          game.physics.arcade.collide(boxs, platforms);
          game.physics.arcade.collide(boxs, player);
          game.physics.arcade.collide(boxs,stars);
-         game.physics.arcade.overlap(player, stars, collectStar, null, this); /* se c'Ë un overlap tra  players e stars viene invocato il metodo collectStar*/
+         game.physics.arcade.overlap(player, stars, collectStar, null, this); /* se c'√® un overlap tra  players e stars viene invocato il metodo collectStar*/
     
-         player.body.velocity.x = 0; //reset la velocit‡ del player
+         player.body.velocity.x = 0; //reset la velocit√† del player
 
 
          if (cursors.left.isDown) {
@@ -112,8 +115,8 @@
          }
 
 
-         if (cursors.up.isDown && player.body.touching.down) { //permette di saltare se Ë premuto il tasto verso l'alto
-             player.body.velocity.y = -100;
+         if (cursors.up.isDown && player.body.touching.down) { //permette di saltare se √® premuto il tasto verso l'alto
+             player.body.velocity.y = -180;
          }
 
          background.tilePosition.x = -game.camera.x; //aggiorno la posizione del background
@@ -126,13 +129,15 @@
      }
 
      function classicalResize() {
-         ground.scale.setTo(2, 2);
+         ground.scale.setTo(5, 5);
          //boxs.scale.setTo(1 / 4, 1 / 4);
      }
 
  
      function collectStar(player, star) {
-         star.kill(); //rimuove la stella in cui c'Ë statop l'overlap.
+         star.kill(); //rimuove la stella in cui c'√® stato l'overlap.
+         score += 10; //aumento lo score di 10 punti
+         scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
      }
 
 
