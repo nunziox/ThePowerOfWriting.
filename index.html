@@ -9,7 +9,8 @@
      var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update });
 
      function preload() {
-         game.load.image('sky', 'assets/sky.png');
+         //game.load.image('sky', 'assets/sky.png');
+         game.load.image('forest', 'assets/forest.jpg');
          game.load.image('ground', 'assets/platform.png');
          game.load.image('star', 'assets/star.png');
          game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
@@ -20,10 +21,14 @@
      var platforms;
      var cursors;
      var stars;
+     var background;
+     var star;
 
      function create() {
          game.physics.startSystem(Phaser.Physics.ARCADE); //abilita la fisica
-         game.add.sprite(0, 0, 'sky'); //aggiunge il cielo
+
+         background = game.add.tileSprite(0, 0, 800, 600, 'forest');
+         //game.add.sprite(0, 0, 'sky'); //aggiunge il cielo
 
          platforms = game.add.group(); //il platform contiene la terra e le due sporgenze su cui possiamo saltare
          platforms.enableBody = true; //Noi abiliteremo la fisica per tutti gli oggetti che sono stati creati in questo gruppo
@@ -33,9 +38,10 @@
          ground.body.immovable = true; // questo impedisce la caduta del ground
 
          var ledge = platforms.create(400, 400, 'ground'); // Adesso creiamo le due sporgenze
-         ledge.body.immovable = true;
-         ledge = platforms.create(-150, 250, 'ground');
-         ledge.body.immovable = true;
+         //ledge.body.immovable = true;
+
+         //ledge = platforms.create(-150, 250, 'ground');
+         //ledge.body.immovable = true;
 
          player = game.add.sprite(32, game.world.height - 150, 'dude');
          game.physics.arcade.enable(player); //abilità la fisica al player
@@ -55,13 +61,14 @@
          stars.enableBody = true; //abilitiamo tutte le stelle che sono state create in questo gruppo
 
          for (var i = 0; i < 12; i++) {
-             var star = stars.create(i * 70, 0, 'star'); //creaiamo una star nel gruppo stars
+             star = stars.create(i * 70, 0, 'star'); //creaiamo una star nel gruppo stars
              star.body.gravity.y = 300; //impostiamo il valore della gravita
              star.body.bounce.y = 0.7 + Math.random() * 0.2; //diamo alla stella un valore di rimbalzo casuale
          }
      }
 
      function update() {
+
 
 
          game.physics.arcade.collide(player, platforms); //collisione tra il personaggio e il platform.
@@ -73,11 +80,13 @@
 
 
          if (cursors.left.isDown) {
+             moveNextObject();
              player.body.velocity.x = -150; //Muovi a sinistra
 
              player.animations.play('left');
          }
          else if (cursors.right.isDown) {
+             moveBackObject();
              player.body.velocity.x = 150; //Muovi a destra
 
              player.animations.play('right');
@@ -91,6 +100,16 @@
              player.body.velocity.y = -100;
          }
 
+     }
+
+     function moveBackObject(){
+         background.tilePosition.x -= 4;
+         stars.position.x -= 4;
+     }
+
+     function moveNextObject(){
+         background.tilePosition.x += 4;
+         stars.position.x += 4;
      }
 
      function collectStar(player, star) {
