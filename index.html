@@ -1,6 +1,7 @@
 <html>
 	
  <head>
+     <!-- <script type="text/javascript" src="js/hammer.js"></script> -->
      <script type="text/javascript" src="js/phaser.min.js"></script>
  </head>
 
@@ -8,8 +9,7 @@
     <script>
 
      var game = new Phaser.Game(800, 600, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
-     
-
+     var canvas;
      var RIGHT = 1, LEFT = 0;
 
      var player;
@@ -92,6 +92,10 @@
          game.camera.deadzone = new Phaser.Rectangle(400, 600, 0, 600);
 
          classicalResize();
+
+         canvas = document.getElementsByTagName('body')[0];                                 //prelevo la canvas del gioco
+
+    
      }
 
      function update() {
@@ -105,21 +109,30 @@
     
          player.body.velocity.x = 0; //reset la velocità del player
 
+         if (onSwipeUp() && player.body.touching.down) {
+            player.body.velocity.y = -350
+         }
 
-         if (game.input.activePointer.isDown) {
-             if (Math.floor(game.input.x / (game.width / 2)) === LEFT) {
+        if (game.input.activePointer.isDown) {
+            if (Math.floor(game.input.x / (game.width / 2)) === LEFT) {
                  player.body.velocity.x = -150; //Muovi a sinistra
                  player.animations.play('left');
-             }
+            }
 
-             if (Math.floor(game.input.x / (game.width / 2)) === RIGHT) {
-                 player.body.velocity.x = 150; //Muovi a destra
-                 player.animations.play('right');
-             }
+            if (Math.floor(game.input.x / (game.width / 2)) === RIGHT) {
+                player.body.velocity.x = 150; //Muovi a destra
+                player.animations.play('right');
+            }
          } else {
              player.animations.stop();
              player.frame = 4;
          }
+
+        if (game.input.activePointer.isUP) {
+            player.body.velocity.x = 0;
+        }
+        
+    
 
          if (cursors.left.isDown) {
              player.body.velocity.x = -150; //Muovi a sinistra
@@ -128,14 +141,14 @@
          else if (cursors.right.isDown) {
              player.body.velocity.x = 150; //Muovi a destra
              player.animations.play('right');
-         }
-
-         if (cursors.up.isDown && player.body.touching.down) { //permette di saltare se è premuto il tasto verso l'alto
-             player.body.velocity.y = -180;
-         }
-
+         }    
          background.tilePosition.x = -game.camera.x; //aggiorno la posizione del background
 
+     }
+
+
+     function onSwipeUp() {
+         return ((game.input.activePointer.positionDown.y-game.input.activePointer.position.y) > 150 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
      }
 
      function render() {
