@@ -1,0 +1,187 @@
+<html>
+	
+ <head>
+     <!-- <script type="text/javascript" src="js/hammer.js"></script> -->
+     <script type="text/javascript" src="js/phaser.min.js"></script>
+ </head>
+
+ <body>
+    <script>
+     var w = window.innerWidth * window.devicePixelRatio,
+     h = window.innerHeight * window.devicePixelRatio;
+     var game = new Phaser.Game(w, h, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
+
+     var canvas;
+     var RIGHT = 1, LEFT = 0;
+
+     var player;
+     var platforms;
+     var cursors;
+     var stars, star;
+     var background;
+     var boxs, box;
+     var ground;
+
+     var score = 0;
+     var scoreText;
+
+     var milliseconds = 0;
+     var seconds = 0;
+     var minutes = 0;
+
+     var playerW,starW;
+     var playerH,starH;
+
+     function preload() {
+
+         /*Imposta limiti di risoluzione 2048x1536 retina display */
+         game.scale.maxWidth = 1920;
+         game.scale.maxHeight = 1080;
+
+         /*Vogliamo scalare fino a quando possibile, ma proporzionalmente*/
+         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+         game.scale.setScreenSize();
+
+
+         /*Carichiamo le immagini*/
+         game.load.image('box', 'assets/box.png');
+         game.load.image('forest', 'assets/bksprite.png');
+         game.load.image('ground', 'assets/platform.png');
+         game.load.image('star', 'assets/star.png');
+
+         game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+
+         playerW = 32;
+         playerH = 150;
+
+         starW=24;
+         starH = 22;
+     }
+
+
+     function create() {
+         game.physics.startSystem(Phaser.Physics.ARCADE);                                   //abilito la fisica
+         game.world.setBounds(0, 0, 6000, 600);                                             //imposto l'area di copertura della camera
+
+         background = game.add.tileSprite(0, 0, w, h, 'forest');             
+
+         platforms = game.add.group();                                                      //il platform contiene la terra e le due sporgenze su cui possiamo saltare
+         platforms.enableBody = true;                                                       //Noi abiliteremo la fisica per tutti gli oggetti che sono stati creati in questo gruppo
+
+         ground = platforms.create(0, game.world.height - 64, 'ground');                    //adesso creiamo il ground
+         ground.body.immovable = true;                                                      // questo impedisce la caduta del ground
+ 
+         player = game.add.sprite(0, game.world.height - playerH, 'dude');
+         game.physics.arcade.enable(player);                                                //abilità la fisica al player
+
+         player.body.bounce.y = 0.2;                                                        /*impostiamo fisica rimbalzo*/
+         player.body.gravity.y = 350;                                                        /*impostiamo la gravita*/
+         player.body.collideWorldBounds = true;                                             /*impostiamo collisioni*/
+        
+
+         player.animations.add('left', [0, 1, 2, 3], 10, true);                             //animazione cammina a sinistra
+         player.animations.add('right', [5, 6, 7, 8], 10, true);                            //animazione cammina a destra
+
+
+         cursors = game.input.keyboard.createCursorKeys();                                  //creiamo i controlli
+
+         stars = game.add.group();                                                          //creaiamo il gruppo stars
+         stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
+
+         boxs = game.add.group();
+         boxs.enableBody = true;
+
+         /*Creo le stelle*/
+         for (var i = 1; i < 100; i++) {
+             star = stars.create(i * 300, 0, 'star');                                        //creaiamo una star nel gruppo stars
+             star.body.gravity.y = 200;                                                     //impostiamo il valore della gravita
+             star.body.bounce.y = 0.1 + Math.random() * 0.2;                                //diamo alla stella un valore di rimbalzo casuale
+         }
+
+         /*Creo le scatole*/
+         for (var i = 1; i < 6; i++) {
+             box = boxs.create(1000*i, game.world.height - 50 - 65, 'box');
+             //box.body.gravity.y = 300;
+             box.body.immovable = true;
+         }
+
+         scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' }); //stampo lo score attuale
+         scoreText.fixedToCamera = true;
+
+         background.fixedToCamera = true;                                                   //il background è un elemento fisso per la camera
+         ground.fixedToCamera = true;                                                       //il background è un elemento fisso per la camera
+         game.camera.follow(player);                                                        //la camera deve inseguire il giocatore
+         game.camera.deadzone = new Phaser.Rectangle(400, 600, 0, 600);
+
+         classicalResize();
+
+         canvas = document.getElementsByTagName('body')[0];                          //prelevo la canvas del gioco 
+     }
+
+     function update() {
+
+         game.physics.arcade.collide(player,platforms);                             //collisione tra il personaggio e il platform.
+         game.physics.arcade.collide(stars, platforms); 
+         game.physics.arcade.collide(boxs, platforms);
+         game.physics.arcade.collide(boxs, player);
+         game.physics.arcade.collide(boxs,stars);
+         game.physics.arcade.overlap(player, stars, collectStar, null, this);       // Se c'è un overlap tra  players e stars viene invocato il metodo collectStar
+
+         if (onSwipeUp() && player.body.touching.down) {
+            player.body.velocity.y = -350
+         }
+
+         if (onSwipeRight()) {                                                      //Controllo se l'utente fa uno Swap a destra
+             player.body.velocity.x = 150;                                          //Muovi a destra
+             player.animations.play('right');
+         }else if (onSwipeLeft()) {
+             player.body.velocity.x = -150;                                         //Muovi a sinistra
+             player.animations.play('left');
+         }
+
+         background.tilePosition.x = -game.camera.x;                                //Aggiorno la posizione del background
+
+     }
+
+    
+
+     function onSwipeUp() {
+         return ((game.input.activePointer.positionDown.y-game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
+     }
+
+     function onSwipeRight() {
+         return ((game.input.activePointer.position.x - game.input.activePointer.positionDown.x) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
+     }
+
+     function onSwipeLeft() {
+         return ((game.input.activePointer.positionDown.x-game.input.activePointer.position.x) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
+     }
+
+     function render() {
+         game.debug.cameraInfo(game.camera, 32, 32);
+         game.debug.spriteCoords(player, 32, 200);
+     }
+
+     function classicalResize() {
+         ground.scale.setTo(5, 5);
+         //boxs.scale.setTo(1 / 4, 1 / 4);
+     }
+
+ 
+     function collectStar(player, star) {
+         star.kill();                                                   //rimuove la stella in cui c'è stato l'overlap.
+         score += 10;                                                   //aumento lo score di 10 punti
+         scoreText.text = 'Score: ' + score;                            //inserisco un nuovo valore nella scritta
+     }
+
+     function collectBox(player, box) {
+         player.body.velocity.x = 0;
+     }
+
+
+
+
+   </script>
+ </body>
+
+</html>
