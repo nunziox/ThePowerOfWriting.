@@ -1,0 +1,41 @@
+﻿<html>
+
+<head>
+    <title>Game</title>
+    <script type="text/javascript" src="js/phaser.min.js"></script>
+    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+</head>
+
+<body>
+    <script>
+
+        var game = new Phaser.Game(800,832, Phaser.AUTO, 'phaser-example', { preload: preload, create: create });
+
+       function preload() {
+            game.load.tilemap('mario', 'assets/mappa.json', null, Phaser.Tilemap.TILED_JSON);
+            game.load.image('tiles', 'assets/solid.jpg');
+
+        }
+
+
+
+
+        var map;
+        var layer;
+
+        function create() {
+            game.stage.backgroundColor = '#787878';
+            map = game.add.tilemap('mario');
+            map.addTilesetImage('solid', 'tiles');
+            layer = map.createLayer('Terreno');
+            layer.resizeWorld();
+
+            $.each(map.layers, function (key, value) {
+                value.y = -100;
+            });
+        }
+
+       
+      </script>
+   </body>
+</html>

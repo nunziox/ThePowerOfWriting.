@@ -22,15 +22,31 @@
     var background;
     var boxs, box;
     var enemies, enemy; 
-    //var enemy=new Array(); //nel codice sarà presente sempre la realizzaz con array o con gruppo in parallelo come in questo caso
     var ground;
 
     var score = 0;
     var scoreText;
-
     var milliseconds = 0;
     var seconds = 0;
     var minutes = 0;
+    
+
+    var starH=22;
+    var starW=24;
+
+    var playerH = 200;
+    var playerW = 300;
+
+    var enemyH = 100;
+    var enemyW =100;
+
+    var solidH = 100;
+    var solidW = 100;
+
+    var boxH=51;
+    var boxW = 50
+
+    var map;
 
 
     function preload() {
@@ -43,13 +59,13 @@
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         game.scale.setScreenSize();
 
-
+        
         game.load.image('box', 'assets/box.png');
-        game.load.image('forest', 'assets/bksprite.png');
-        game.load.image('ground', 'assets/platform.png');
+        game.load.image('forest', 'assets/bk_smaller.jpg');
+        game.load.image('ground', 'assets/solid.jpg');
         game.load.image('star', 'assets/star.png');
-        game.load.spritesheet('enemy', 'assets/dude.png', 32, 48);
-        game.load.spritesheet('dude', 'assets/dude.png', 32, 48);
+        game.load.spritesheet('enemy', 'assets/bombe.png', enemyW, enemyH);
+        game.load.spritesheet('dude', 'assets/player.png', playerW, playerH);
     }
 
 
@@ -57,23 +73,23 @@
         game.physics.startSystem(Phaser.Physics.ARCADE);                                   //abilito la fisica
         game.world.setBounds(0, 0, 6000, 600);                                             //imposto l'area di copertura della camera
 
+  
         background = game.add.tileSprite(0, 0,w,h,'forest');             
-
         platforms = game.add.group();                                                      //il platform contiene la terra e le due sporgenze su cui possiamo saltare
         platforms.enableBody = true;                                                       //Noi abiliteremo la fisica per tutti gli oggetti che sono stati creati in questo gruppo
 
-        ground = platforms.create(0, game.world.height - 64, 'ground');                    //adesso creiamo il ground
+        ground = platforms.create(0, game.world.height - solidH, 'ground');                    //adesso creiamo il ground
         ground.body.immovable = true;                                                      // questo impedisce la caduta del ground
  
-        player = game.add.sprite(0, game.world.height - 150, 'dude');
+        player = game.add.sprite(0, game.world.height - solidH-playerH, 'dude');
         game.physics.arcade.enable(player);                                                //abilità la fisica al player
 
-        player.body.bounce.y = 0.2;                                                        /*impostiamo fisica rimbalzo*/
+        player.body.bounce.y = 0.2;                                                   /*impostiamo fisica rimbalzo*/
         player.body.gravity.y = 600;                                                        /*impostiamo la gravita*/
         player.body.collideWorldBounds = true;                                             /*impostiamo collisioni*/
 
-        player.animations.add('left', [0, 1, 2, 3], 10, true);                             //animazione cammina a sinistra
-        player.animations.add('right', [5, 6, 7, 8], 10, true);                            //animazione cammina a destra
+        player.animations.add('left', [3,4,5], 10, true);                             //animazione cammina a sinistra
+        player.animations.add('right', [0,1,2], 10, true);                            //animazione cammina a destra
 
 
         cursors = game.input.keyboard.createCursorKeys();                                  //creiamo i controlli
@@ -83,33 +99,15 @@
 
         //Creo nemici
         for (var i = 1; i < 3; i++) {
-            enemy = enemies.create(i * 700, 0, 'enemy');
-            enemy.body.gravity.y = 200; 
+            enemy = enemies.create(i * 700, game.world.height-enemyH-solidH, 'enemy');
             enemy.body.bounce.y = 0.2;
-            enemy.body.gravity.y = 500;
+            //enemy.body.gravity.y = 500;
             enemy.body.collideWorldBounds = true;
         }
 
-        enemies.callAll('animations.add', 'animations', 'left', [3, 4, 5], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
-        enemies.callAll('animations.add', 'animations', 'right', [0, 1, 2], 10, true);
-        
-
-
-        /*
-        for (var i = 1; i < 3; i++) {
-            enemy[i] = game.add.sprite(i*700, game.world.height - 150, 'enemy');
-            game.physics.arcade.enable(enemy[i]);
-            enemy[i].body.bounce.y = 0.2;
-            enemy[i].body.gravity.y = 500;
-            enemy[i].body.collideWorldBounds = true;
-
-            enemy[i].animations.add('left', [3, 4, 5], 10, true);
-            enemy[i].animations.add('right', [0, 1, 2], 10, true);
-            enemy[i].body.collideWorldBounds = true;
-        }
-        */
-
-
+        enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
+        enemies.callAll('animations.add', 'animations', 'right', [0 ], 10, true);
+       
         stars = game.add.group();                                                          //creaiamo il gruppo stars
         stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
 
@@ -117,31 +115,34 @@
         boxs.enableBody = true;
 
         /*Creo le stelle*/
-        for (var i = 1; i < 12; i++) {
-            star = stars.create(i * 70, 0, 'star'); //creaiamo una star nel gruppo stars
-            star.body.gravity.y = 200; //impostiamo il valore della gravita
-            star.body.bounce.y = 0.7 + Math.random() * 0.2; //diamo alla stella un valore di rimbalzo casuale
-            star.body.collideWorldBounds = true; //utile altrimenti esistono ma non si vedono(si possono applicare bug e forse consuma risorse)
-
+        for (var j = 1; j < 100; j=j+20) {
+            for (var i = j; i < j+10; i++) {
+                star = stars.create(i * 2 * starW, game.world.height - solidH - starH, 'star');                   //creaiamo una star nel gruppo stars
+                star.body.gravity.y = 0;                                                        //impostiamo il valore della gravita
+                star.body.bounce.y = 0.7 + Math.random() * 0.2;                                 //diamo alla stella un valore di rimbalzo casuale
+                star.body.collideWorldBounds = true;                                            //utile altrimenti esistono ma non si vedono(si possono applicare bug e forse consuma risorse)
+            }
         }
 
         /*Creo le scatole*/
-        for (var i = 1; i < 6; i++) {
-            box = boxs.create(1000*i, game.world.height - 50 - 65, 'box');
-            //box.body.gravity.y = 300;
+        /*for (var i = 1; i < 6; i++) {
+            box = boxs.create(1000*i, game.world.height - boxH - solidH, 'box');
             box.body.immovable = true;
-        }
+        }*/
 
         scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });//stampo lo score attuale
         scoreText.fixedToCamera = true;
 
         background.fixedToCamera = true;                                                   //il background è un elemento fisso per la camera
         ground.fixedToCamera = true;                                                       //il ground è un elemento fisso per la camera
+        ground.scale.setTo(w /solidW,1);
+
+
         game.camera.follow(player);                                                        //la camera deve inseguire il giocatore
         game.camera.deadzone = new Phaser.Rectangle(400, 600, 0, 600);
         
-        classicalResize();
         canvas = document.getElementsByTagName('body')[0];                                 //prelevo la canvas del gioco
+        classicalResize();
     }
 
     function update() {
@@ -156,10 +157,9 @@
         
         game.physics.arcade.collide(boxs, enemies);
         game.physics.arcade.collide(enemies, platforms);
-        //game.physics.arcade.overlap(enemies, player, match, null, this);
 
         if (onSwipeUp() && player.body.touching.down) {
-            player.body.velocity.y = -350
+            player.body.velocity.y = -500
         }
 
         if (onSwipeRight()) {                                                      //Controllo se l'utente fa uno Swap a destra
@@ -175,13 +175,6 @@
             game.physics.arcade.overlap(currentEnemy, player, match, null, this);
         }
         
-        /*
-        for (var i = 1; i < 3; i++) {
-            game.physics.arcade.collide(boxs, enemy[i]);
-            game.physics.arcade.collide(enemy[i], platforms);
-            game.physics.arcade.overlap(enemy[i], player, match, null, this);
-        }
-        */
         
         for (var i = 0; i < 2; i++) {
             var posEnemyX = enemies.getAt(i).x;
@@ -195,28 +188,9 @@
             }
         }
         
-        /*
-        for (var i = 1; i < 3; i++){
-            var posEnemyX = enemy[i].position.x;
-            if (posEnemyX <= i*700) {
-                enemy[i].body.velocity.x = 80;
-                enemy[i].animations.play('right');
-            }
-            if (posEnemyX >= i*880) {
-                enemy[i].body.velocity.x = -80;
-                enemy[i].animations.play('left');
-            }
-
-        }
-        */
-
-
         background.tilePosition.x = -game.camera.x; //aggiorno la posizione del background
-
-        //clearAll(stars, enemies); //i nemici e le stelle non ci saranno più se ritorno indietro
-        
+     
     }
-
   
         function onSwipeUp() {
             return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
@@ -236,52 +210,25 @@
         }
 
     function classicalResize() {
-        ground.scale.setTo(5, 5);
+        
     }
  
     function collectStar(player, star) {
-        star.kill(); //rimuove la stella in cui c'è stato l'overlap.
-        score += 10; //aumento lo score di 10 punti
-        scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
+        star.kill();                                //rimuove la stella in cui c'è stato l'overlap.
+        score += 10;                                //aumento lo score di 10 punti
+        scoreText.text = 'Score: ' + score;         //inserisco un nuovo valore nella scritta
     }
 
     function match(enemy, player) {
-        if (player.position.y < enemy.position.y) {
+        if (player.position.y < enemy.position.y-100) {
             enemy.kill();
             score += 20;//aumento di 20 punti
             scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
         } else {
             player.kill();
-            alert("Hai perso!");
             location.reload();
         }
     }
-
-    //function clearAll(stars, enemy) {
-    function clearAll(stars, enemies) {
-        for (var i = 0; i < 11; i++) {
-            var posStarX = stars.getAt(i).x;
-            if (game.camera.x > posStarX) {
-                stars.getAt(i).kill();
-            }
-        }
-        /*
-        for (var i = 1; i < 3; i++) {
-            var posEnemyX = enemy[i].x;
-               if (game.camera.x > posEnemyX) {
-                   enemy[i].kill();
-               }
-        }
-        */
-        for (var i = 0; i < 2; i++) {
-            var posEnemyX = enemies.getAt(i).x;
-            if (game.camera.x > posEnemyX) {
-                enemies.getAt(i).kill();
-            }
-        }
-        
-    }
-
 
     </script>
   </body>
