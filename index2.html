@@ -12,6 +12,19 @@
 
         var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
 
+        var json = {
+            "shape": [
+                {
+                    "name": "[",
+                    "pixelArray": [{ "x": 0, "y": 0 }, { "x": 0, "y": 1 }, { "x": 0, "y": 2 }, { "x": 0, "y": 3 }, { "x": 0, "y": 4 }, { "x": 0, "y": 5 }, { "x": 0, "y": 6 }, { "x": 0, "y": 7 },
+                                  { "x": 1, "y": 0 }, { "x": 2, "y": 0 }, { "x": 3, "y": 0 },
+                                  { "x": 1, "y": 7 }, { "x": 2, "y": 7 }, { "x": 3, "y": 7 }
+                    ],
+                    "centerX": 2,
+                    "centerY": 4
+                }
+            ]
+        };
 
 
         var _points, _r,bmd ;
@@ -23,10 +36,13 @@
         var rmarginleft = 3 * rsize;
         var rmargintop = 3 * rsize;
 
+        var bitmapW=800;
+        var bitmapH=600;
+
         var point = 0;
 
         function initializeBitmapData() {
-            bmd = game.add.bitmapData(800, 600);
+            bmd = game.add.bitmapData(bitmapW, bitmapH);
             bmd.context.fillStyle = '#ADDBEB';
             bmd.canvas.style.background = 'red';
             bmd.context.fillRect(0, 0, 800, 600);
@@ -36,7 +52,8 @@
             _points = new Array();
             _r = new DollarRecognizer();
 
-            writeC();
+            //writeC();
+            addShape("[");
         }
 
         function preload() {
@@ -133,6 +150,26 @@
             for (i = rmarginleft+rsize; i < (rmarginleft + 4 * rsize) ; i = i + rsize) {
                 bmd.context.fillRect(i, rmargintop+6*rsize, rsize, rsize);
                 pointR.point.push({ "x": i, "y": rmargintop + 6 * rsize });
+            }
+        }
+
+        function addShape(shape_name) {
+            var pixelArray = '0';
+            var shape;
+            for (var i = 0; i < json.shape.length; i++) {
+                if(json.shape[i].name==shape_name){
+                    pixelArray = json.shape[i].pixelArray;
+                    shape = json.shape[i];
+                }
+            }
+
+            if (pixelArray !== '0') {
+                for (var i = 0; i < pixelArray.length; i++) {
+                    var piX=(pixelArray[i].x * rsize) - parseInt(shape.centerX) * rsize+bitmapW/2;
+                    var piY=(pixelArray[i].y * rsize) - parseInt(shape.centerY) * rsize+bitmapH/2;
+                    bmd.context.fillRect(piX,piY, rsize, rsize);
+                    pointR.point.push({ "x": piX, "y": piY });
+                }
             }
         }
 
