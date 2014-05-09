@@ -2,6 +2,7 @@
 
 <head>
     <title>Game</title>
+    <script type="text/javascript" src="js/dollar.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 </head>
@@ -9,33 +10,142 @@
 <body>
     <script>
 
-        var game = new Phaser.Game(800,832, Phaser.AUTO, 'phaser-example', { preload: preload, create: create });
+        var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
 
-       function preload() {
-            game.load.tilemap('mario', 'assets/mappa.json', null, Phaser.Tilemap.TILED_JSON);
-            game.load.image('tiles', 'assets/solid.jpg');
 
+
+        var _points, _r,bmd ;
+        var pointR = { point: [] };
+
+        var turn = 0;
+        var rsize = 20;
+        var wsize = 10;
+        var rmarginleft = 3 * rsize;
+        var rmargintop = 3 * rsize;
+
+        var point = 0;
+
+        function initializeBitmapData() {
+            bmd = game.add.bitmapData(800, 600);
+            bmd.context.fillStyle = '#ADDBEB';
+            bmd.canvas.style.background = 'red';
+            bmd.context.fillRect(0, 0, 800, 600);
+            bmd.context.fillStyle = '#FFFFFF';
+            game.add.sprite(0, 0, bmd);
+
+            _points = new Array();
+            _r = new DollarRecognizer();
+
+            writeC();
         }
 
+        function preload() {
 
 
-
-        var map;
-        var layer;
+        }
 
         function create() {
-            game.stage.backgroundColor = '#787878';
-            map = game.add.tilemap('mario');
-            map.addTilesetImage('solid', 'tiles');
-            layer = map.createLayer('Terreno');
-            layer.resizeWorld();
-
-            $.each(map.layers, function (key, value) {
-                value.y = -100;
-            });
+            initializeBitmapData();
         }
 
-       
+        function captureInputData() {
+            bmd.context.fillStyle = '#000000';
+            var x = game.input.activePointer.position.x;
+            var y = game.input.activePointer.position.y;
+            bmd.context.fillRect(game.input.activePointer.position.x, game.input.activePointer.position.y, wsize, wsize);
+
+            for (var i = 0; i < wsize; i++) {
+                for (j = 0; j < wsize; j++) {
+                    if (!isXY(x + i, y + j)) {
+                        _points[_points.length] = new Point(x + i, y + j);
+                    }
+                }
+            }
+
+            bmd.dirty = true;
+            turn = 1;
+        }
+
+        function checkInputData() {
+
+            var res = {};
+
+                if (_points.length >= 2600) {
+                    for (var i = 0; i < pointR.point.length; i++) {
+                        for (var j = 0; j < _points.length; j++) {
+
+                            var pixX = _points[j].X;
+                            var pixY = _points[j].Y;
+                            if ((pixX >= parseInt(pointR.point[i].x) && pixX < parseInt(pointR.point[i].x) + rsize) && (pixY > parseInt(pointR.point[i].y) && pixY <= parseInt(pointR.point[i].y) + rsize)) {
+                                point += 1;
+                            }
+
+                        }
+                    }
+
+                    var points = _points;
+                    var result = _r.Recognize(points, 0);//Attenzione che la funzione recognize modifica il vettore dei _points.
+                    res = { "point": point, "npoint": _points.length, "type": result.Name };
+                    /*alert(" (" + (point / (_points.length) * 100) + ").");
+                    var result = _r.Recognize(_points, 0); 
+                    alert("Result: " + result.Name);*/
+                }
+                else {
+                    //alert("Error");
+                    res = { "point": 0, "npoint": 0, "type": 'null' };
+
+                }
+                point = 0;
+             return res;
+        }
+
+
+        function update() {
+
+            if (game.input.activePointer.isDown) {
+                captureInputData();
+            }
+
+            if (game.input.activePointer.isUp) {
+                if (turn == 1) {
+                    var res = checkInputData();
+                    if (res.point == 0 && res.npoint == 0) {
+                        alert("Error!");
+                    } else {
+                        alert(" PunteggioTot:(" + (res.point / (res.npoint) * 100) + ")." + " Figura:" + res.type);
+                    }
+                    turn = 0;
+                }
+            }
+        }
+
+        function writeC() {
+            for (i = rmargintop; i < (rmargintop+7*rsize); i = i + rsize) {
+                bmd.context.fillRect(rmarginleft, i, rsize, rsize);
+                pointR.point.push({ "x": rmarginleft, "y": i });
+            }
+
+            for (i = rmarginleft+rsize; i <  (rmarginleft+4*rsize); i = i + rsize) {
+                bmd.context.fillRect(i, rmargintop, rsize, rsize);
+                pointR.point.push({ "x": i, "y": rmargintop });
+            }
+
+            for (i = rmarginleft+rsize; i < (rmarginleft + 4 * rsize) ; i = i + rsize) {
+                bmd.context.fillRect(i, rmargintop+6*rsize, rsize, rsize);
+                pointR.point.push({ "x": i, "y": rmargintop + 6 * rsize });
+            }
+        }
+
+        function isXY(x, y) {
+            for (var i = 0; i < _points.length; i++) {
+                if (_points[i].X == x && _points[i].Y==y) {
+                    //console.log("X:" + _points[i].X + "Now:" + x + "Y:" + _points[i].Y + "Now:"+ y);
+                   return 1;
+               }
+            }
+           return 0;
+       }
+
       </script>
    </body>
 </html>
