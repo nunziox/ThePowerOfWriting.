@@ -2,7 +2,10 @@
 
  <head>
      <title>Game</title>
+     <script type="text/javascript" src="js/dollar.js"></script>
      <script type="text/javascript" src="js/phaser.min.js"></script>
+     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+     <script src="js/shape.js"></script>
  </head>
 
  <body>
@@ -30,7 +33,6 @@
     var seconds = 0;
     var minutes = 0;
     
-
     var starH=22;
     var starW=24;
 
@@ -44,9 +46,11 @@
     var solidW = 100;
 
     var boxH=51;
-    var boxW = 50
-
+    var boxW =50
+    
+    var shape=[];
     var map;
+
 
 
     function preload() {
@@ -99,10 +103,12 @@
 
         //Creo nemici
         for (var i = 1; i < 3; i++) {
-            enemy = enemies.create(i * 700, game.world.height-enemyH-solidH, 'enemy');
+            enemy = enemies.create(i * 1500, game.world.height-enemyH-solidH, 'enemy');
             enemy.body.bounce.y = 0.2;
-            //enemy.body.gravity.y = 500;
             enemy.body.collideWorldBounds = true;
+
+            //shape[i] = new Shape(i * 1500, game.world.height / 2 - 400 / 2, 400, 300);
+            //shape[i].initializeBitmapData();
         }
 
         enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   

@@ -5,127 +5,39 @@
     <script type="text/javascript" src="js/dollar.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="js/shape.js"></script>
 </head>
 
 <body>
     <script>
 
         var game = new Phaser.Game(800, 600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
-
-        var json = {
-            "shape": [
-                {
-                    "name": "[",
-                    "pixelArray": [{ "x": 0, "y": 0 }, { "x": 0, "y": 1 }, { "x": 0, "y": 2 }, { "x": 0, "y": 3 }, { "x": 0, "y": 4 }, { "x": 0, "y": 5 }, { "x": 0, "y": 6 }, { "x": 0, "y": 7 },
-                                  { "x": 1, "y": 0 }, { "x": 2, "y": 0 }, { "x": 3, "y": 0 },
-                                  { "x": 1, "y": 7 }, { "x": 2, "y": 7 }, { "x": 3, "y": 7 }
-                    ],
-                    "centerX": 2,
-                    "centerY": 4
-                }
-            ]
-        };
-
-
-        var _points, _r,bmd ;
-        var pointR = { point: [] };
-
         var turn = 0;
-        var rsize = 20;
-        var wsize = 10;
-        var rmarginleft = 3 * rsize;
-        var rmargintop = 3 * rsize;
 
-        var bitmapW=800;
-        var bitmapH=600;
-
-        var point = 0;
-
-        function initializeBitmapData() {
-            bmd = game.add.bitmapData(bitmapW, bitmapH);
-            bmd.context.fillStyle = '#ADDBEB';
-            bmd.canvas.style.background = 'red';
-            bmd.context.fillRect(0, 0, 800, 600);
-            bmd.context.fillStyle = '#FFFFFF';
-            game.add.sprite(0, 0, bmd);
-
-            _points = new Array();
-            _r = new DollarRecognizer();
-
-            //writeC();
-            addShape("[");
-        }
+        var bitmapW = 400;
+        var bitmapH = 300;
+        var posX = 100;
+        var posY = 100;
+        var shape;
 
         function preload() {
-
-
+            shape = new Shape(posX, posY, bitmapW, bitmapH);
         }
 
         function create() {
-            initializeBitmapData();
-        }
-
-        function captureInputData() {
-            bmd.context.fillStyle = '#000000';
-            var x = game.input.activePointer.position.x;
-            var y = game.input.activePointer.position.y;
-            bmd.context.fillRect(game.input.activePointer.position.x, game.input.activePointer.position.y, wsize, wsize);
-
-            for (var i = 0; i < wsize; i++) {
-                for (j = 0; j < wsize; j++) {
-                    if (!isXY(x + i, y + j)) {
-                        _points[_points.length] = new Point(x + i, y + j);
-                    }
-                }
-            }
-
-            bmd.dirty = true;
-            turn = 1;
-        }
-
-        function checkInputData() {
-
-            var res = {};
-
-                if (_points.length >= 2600) {
-                    for (var i = 0; i < pointR.point.length; i++) {
-                        for (var j = 0; j < _points.length; j++) {
-
-                            var pixX = _points[j].X;
-                            var pixY = _points[j].Y;
-                            if ((pixX >= parseInt(pointR.point[i].x) && pixX < parseInt(pointR.point[i].x) + rsize) && (pixY > parseInt(pointR.point[i].y) && pixY <= parseInt(pointR.point[i].y) + rsize)) {
-                                point += 1;
-                            }
-
-                        }
-                    }
-
-                    var points = _points;
-                    var result = _r.Recognize(points, 0);//Attenzione che la funzione recognize modifica il vettore dei _points.
-                    res = { "point": point, "npoint": _points.length, "type": result.Name };
-                    /*alert(" (" + (point / (_points.length) * 100) + ").");
-                    var result = _r.Recognize(_points, 0); 
-                    alert("Result: " + result.Name);*/
-                }
-                else {
-                    //alert("Error");
-                    res = { "point": 0, "npoint": 0, "type": 'null' };
-
-                }
-                point = 0;
-             return res;
+            shape.initializeBitmapData();
         }
 
 
         function update() {
 
             if (game.input.activePointer.isDown) {
-                captureInputData();
+                shape.captureInputData();
             }
 
             if (game.input.activePointer.isUp) {
                 if (turn == 1) {
-                    var res = checkInputData();
+                    var res = shape.checkInputData();
                     if (res.point == 0 && res.npoint == 0) {
                         alert("Error!");
                     } else {
@@ -136,52 +48,6 @@
             }
         }
 
-        function writeC() {
-            for (i = rmargintop; i < (rmargintop+7*rsize); i = i + rsize) {
-                bmd.context.fillRect(rmarginleft, i, rsize, rsize);
-                pointR.point.push({ "x": rmarginleft, "y": i });
-            }
-
-            for (i = rmarginleft+rsize; i <  (rmarginleft+4*rsize); i = i + rsize) {
-                bmd.context.fillRect(i, rmargintop, rsize, rsize);
-                pointR.point.push({ "x": i, "y": rmargintop });
-            }
-
-            for (i = rmarginleft+rsize; i < (rmarginleft + 4 * rsize) ; i = i + rsize) {
-                bmd.context.fillRect(i, rmargintop+6*rsize, rsize, rsize);
-                pointR.point.push({ "x": i, "y": rmargintop + 6 * rsize });
-            }
-        }
-
-        function addShape(shape_name) {
-            var pixelArray = '0';
-            var shape;
-            for (var i = 0; i < json.shape.length; i++) {
-                if(json.shape[i].name==shape_name){
-                    pixelArray = json.shape[i].pixelArray;
-                    shape = json.shape[i];
-                }
-            }
-
-            if (pixelArray !== '0') {
-                for (var i = 0; i < pixelArray.length; i++) {
-                    var piX=(pixelArray[i].x * rsize) - parseInt(shape.centerX) * rsize+bitmapW/2;
-                    var piY=(pixelArray[i].y * rsize) - parseInt(shape.centerY) * rsize+bitmapH/2;
-                    bmd.context.fillRect(piX,piY, rsize, rsize);
-                    pointR.point.push({ "x": piX, "y": piY });
-                }
-            }
-        }
-
-        function isXY(x, y) {
-            for (var i = 0; i < _points.length; i++) {
-                if (_points[i].X == x && _points[i].Y==y) {
-                    //console.log("X:" + _points[i].X + "Now:" + x + "Y:" + _points[i].Y + "Now:"+ y);
-                   return 1;
-               }
-            }
-           return 0;
-       }
 
       </script>
    </body>
