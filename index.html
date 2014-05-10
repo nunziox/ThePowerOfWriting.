@@ -39,18 +39,21 @@
     var playerH = 200;
     var playerW = 300;
 
-    var enemyH = 100;
-    var enemyW =100;
+    var enemyH = 89;
+    var enemyW =89;
 
     var solidH = 100;
     var solidW = 100;
 
     var boxH=51;
-    var boxW =50
-    
+    var boxW = 50
+
+    var lecters;
+    var lecter;
     var shape=[];
     var map;
 
+    var turn = 0;
 
 
     function preload() {
@@ -65,11 +68,12 @@
 
         
         game.load.image('box', 'assets/box.png');
-        game.load.image('forest', 'assets/bk_smaller.jpg');
+        game.load.image('forest', 'assets/bk_smaller2.jpg');
         game.load.image('ground', 'assets/solid.jpg');
         game.load.image('star', 'assets/star.png');
-        game.load.spritesheet('enemy', 'assets/bombe.png', enemyW, enemyH);
+        game.load.spritesheet('enemy', 'assets/bombe_.png', enemyW, enemyH);
         game.load.spritesheet('dude', 'assets/player.png', playerW, playerH);
+        game.load.image('fumetto', '/assets/fumetto.jpg');
     }
 
 
@@ -84,6 +88,29 @@
 
         ground = platforms.create(0, game.world.height - solidH, 'ground');                    //adesso creiamo il ground
         ground.body.immovable = true;                                                      // questo impedisce la caduta del ground
+
+        enemies = game.add.group();
+        enemies.enableBody = true;
+
+        lecters = game.add.group();
+        lecters.enableBody = true;
+
+        //Creo nemici
+        for (var i = 1; i < 3; i++) {
+            enemy = enemies.create(i * 1500, game.world.height - enemyH - solidH, 'enemy');
+            enemy.body.bounce.y = 0.2;
+            enemy.body.collideWorldBounds = true;
+
+            //game.add.sprite(this.posX, this.posY, this.bmd);
+
+        }
+
+        shape[0] = new Shape(i * 1500, game.world.height / 2 - 150 / 2, 200, 150);
+        shape[0].initializeBitmapData(game.cache.getImage('fumetto'));
+        //lecter = lecters.create(i * 100, game.world.height - shape[0].bitmapH - solidH - enemyH, shape[0].bmd);
+
+        enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
+        enemies.callAll('animations.add', 'animations', 'right', [0], 10, true);
  
         player = game.add.sprite(0, game.world.height - solidH-playerH, 'dude');
         game.physics.arcade.enable(player);                                                //abilità la fisica al player
@@ -98,21 +125,9 @@
 
         cursors = game.input.keyboard.createCursorKeys();                                  //creiamo i controlli
              
-        enemies = game.add.group();
-        enemies.enableBody = true;
 
-        //Creo nemici
-        for (var i = 1; i < 3; i++) {
-            enemy = enemies.create(i * 1500, game.world.height-enemyH-solidH, 'enemy');
-            enemy.body.bounce.y = 0.2;
-            enemy.body.collideWorldBounds = true;
 
-            //shape[i] = new Shape(i * 1500, game.world.height / 2 - 400 / 2, 400, 300);
-            //shape[i].initializeBitmapData();
-        }
 
-        enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
-        enemies.callAll('animations.add', 'animations', 'right', [0 ], 10, true);
        
         stars = game.add.group();                                                          //creaiamo il gruppo stars
         stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
@@ -164,6 +179,23 @@
         game.physics.arcade.collide(boxs, enemies);
         game.physics.arcade.collide(enemies, platforms);
 
+
+        if (game.input.activePointer.isDown) {
+            turn=shape[0].captureInputData();
+        }
+
+        if (game.input.activePointer.isUp) {
+            if (turn == 1) {
+                var res = shape[0].checkInputData();
+                if (res.point == 0 && res.npoint == 0) {
+                    console.log("Error!");
+                } else {
+                    console.log(" PunteggioTot:(" + (res.point / (res.npoint) * 100) + ")." + " Figura:" + res.type);
+                }
+                turn = 0;
+            }
+        }
+
         if (onSwipeUp() && player.body.touching.down) {
             player.body.velocity.y = -500
         }
@@ -198,6 +230,8 @@
      
     }
   
+  
+
         function onSwipeUp() {
             return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
         }

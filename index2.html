@@ -22,17 +22,20 @@
 
         function preload() {
             shape = new Shape(posX, posY, bitmapW, bitmapH);
+            game.load.image('fumetto', '/assets/fumetto.jpg');
+
         }
 
         function create() {
-            shape.initializeBitmapData();
+            shape.initializeBitmapData(game.cache.getImage('fumetto'));
         }
 
 
         function update() {
 
+
             if (game.input.activePointer.isDown) {
-                shape.captureInputData();
+                turn=shape.captureInputData();
             }
 
             if (game.input.activePointer.isUp) {
