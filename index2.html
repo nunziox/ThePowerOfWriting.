@@ -16,18 +16,22 @@
 
         var bitmapW = 400;
         var bitmapH = 300;
-        var posX = 100;
-        var posY = 100;
+        var posX = 0;
+        var posY = 0;
         var shape;
+        var lecters;
 
         function preload() {
-            shape = new Shape(posX, posY, bitmapW, bitmapH);
-            game.load.image('fumetto', '/assets/fumetto.jpg');
+            game.load.image('fumetto', '../assets/fumetto.jpg');
 
         }
 
         function create() {
+            shape = new Shape(posX, posY, bitmapW, bitmapH);
             shape.initializeBitmapData(game.cache.getImage('fumetto'));
+            lecters = game.add.group();
+            lecters.enableBody = true;
+            lecter = lecters.create(0, 0, shape.bmd);
         }
 
 

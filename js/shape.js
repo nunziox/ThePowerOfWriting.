@@ -1,4 +1,4 @@
-﻿function Shape(posX, posY, bitmapW, bitmapH) {
+﻿function Shape(posX, posY, bitmapW, bitmapH,type) {
     this.posX = posX;
     this.posY = posY;
     this.bitmapW = bitmapW;
@@ -10,6 +10,21 @@
     this._points = 0;
     this._r = 0;
     this.bmd = 0;
+    this.type = type;
+}
+
+
+Shape.prototype.getPosX=function(){
+    return this.posX;
+}
+
+Shape.prototype.getPosY= function () {
+    return this.posY;
+}
+
+
+Shape.prototype.setPosX=function(posX){
+    this.posX = posX;
 }
 
 Shape.prototype.initializeBitmapData = function (img) {
@@ -17,7 +32,6 @@ Shape.prototype.initializeBitmapData = function (img) {
     oReq.open("get", "../json/shape.json", false);
     oReq.send();
     var json=JSON.parse(oReq.responseText);
-
 
     this.bmd = game.add.bitmapData(this.bitmapW, this.bitmapH);
     this.bmd.context.drawImage(img, 0, 0,this.bitmapW,this.bitmapH);
@@ -31,7 +45,7 @@ Shape.prototype.initializeBitmapData = function (img) {
     this.rsize = this.bitmapH / 10;
     this.wsize = this.bitmapH / 30;
 
-    this.addShape("[", json);
+    this.addShape(this.type, json);
 }
 
 Shape.prototype.captureInputData = function () {
