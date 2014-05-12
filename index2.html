@@ -28,7 +28,7 @@
 
         function create() {
             shape = new Shape(posX, posY, bitmapW, bitmapH);
-            shape.initializeBitmapData(game.cache.getImage('fumetto'));
+            shape.initializeBitmapData(game.cache.getImage('fumetto'), "left square bracket");
             lecters = game.add.group();
             lecters.enableBody = true;
             lecter = lecters.create(0, 0, shape.bmd);

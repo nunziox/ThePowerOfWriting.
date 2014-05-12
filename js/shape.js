@@ -28,10 +28,24 @@ Shape.prototype.setPosX=function(posX){
 }
 
 Shape.prototype.initializeBitmapData = function (img) {
-    var oReq = new XMLHttpRequest();
+    /*var oReq = new XMLHttpRequest();
     oReq.open("get", "../json/shape.json", false);
     oReq.send();
-    var json=JSON.parse(oReq.responseText);
+    var json=JSON.parse(oReq.responseText);*/
+
+    var json = {
+        "shape": [
+            {
+                "name": "left square bracket",
+                "pixelArray": [{ "x": 0, "y": 0 }, { "x": 0, "y": 1 }, { "x": 0, "y": 2 }, { "x": 0, "y": 3 }, { "x": 0, "y": 4 }, { "x": 0, "y": 5 }, { "x": 0, "y": 6 }, { "x": 0, "y": 7 },
+                              { "x": 1, "y": 0 }, { "x": 2, "y": 0 }, { "x": 3, "y": 0 },
+                              { "x": 1, "y": 7 }, { "x": 2, "y": 7 }, { "x": 3, "y": 7 }
+                ],
+                "centerX": 2,
+                "centerY": 4
+            }
+        ]
+    };
 
     this.bmd = game.add.bitmapData(this.bitmapW, this.bitmapH);
     this.bmd.context.drawImage(img, 0, 0,this.bitmapW,this.bitmapH);
