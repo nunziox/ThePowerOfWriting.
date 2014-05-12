@@ -56,7 +56,7 @@
 
     var lecters;
     var lecter;
-    var shape=[];
+    var shape=0;
     var map;
 
     var audio_game;
@@ -69,9 +69,9 @@
     var live;
 
 
-    var killedenemy=1;                                                          //variabile che conta il numero di nemici superati.
     var turn = 0;                                                               //controlla se è il turno di scirvere o meno.
     var bomb_state = 0;                                                         //tiene conto dello stato della bomba
+    
 
     this.reservedArea = { area: [] };
      
@@ -107,7 +107,7 @@
         reservedArea.area.push({ "x": 0, "y": 0, "x_": 0, "y_": 0,"posX":0}); //Lo inizializzo in modo che abbia almento un elemento.
 
         game.physics.startSystem(Phaser.Physics.ARCADE);                                   //abilito la fisica
-        game.world.setBounds(0, 0, 6000, 600);                                             //imposto l'area di copertura della camera
+        game.world.setBounds(0, 0, 9999999999, 600);                                             //imposto l'area di copertura della camera
 
         audio_game = game.add.audio('audio_game');
         effect_sound = game.add.audio('effect_sound');
@@ -155,22 +155,12 @@
             enemy = enemies.create(i * 700, game.world.height - enemyH - solidH, 'enemy');
             enemy.body.bounce.y = 0.2;
             enemy.body.collideWorldBounds = true;
-
-            var xLecter = enemy.position.x+enemyW/2;
-            var yLecter = game.world.height - bitmapH - solidH - enemyH;
-            shape[i] = new Shape(xLecter, yLecter, bitmapW, bitmapH, "left square bracket");
-            shape[i].initializeBitmapData(game.cache.getImage('fumetto'));
-            lecter = lecters.create(xLecter, yLecter, shape[i].bmd);
-            lecter.visible = false;
-            reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + bitmapW, "y_": yLecter + bitmapH,"posX":xLecter });
-
         }
 
 
         enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
         enemies.callAll('animations.add', 'animations', 'right', [0], 10, true);
-        enemies.callAll('animations.add', 'animations', 'boom', [2, 3, 4, 5], 0.5, false);
-        enemies.callAll('animations.add', 'animations', 'offboom', [2, 3, 4, 6], 0.5, false);
+
 
         stars = game.add.group();                                                          //creaiamo il gruppo stars
         stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
@@ -198,7 +188,7 @@
 
 
         game.camera.follow(player);                                                             //la camera deve inseguire il giocatore
-        game.camera.deadzone = new Phaser.Rectangle(400, 600, 0, 600);
+        game.camera.deadzone = new Phaser.Rectangle(w / 2 + playerW / 2, 0, 0, 0);
         
         canvas = document.getElementsByTagName('body')[0];                                      //prelevo la canvas del gioco
         classicalResize();
@@ -220,20 +210,38 @@
         game.physics.arcade.collide(boxs, enemies);
         game.physics.arcade.collide(enemies, platforms);
 
+       
+
+
         //player.body.velocity.x = 0;
+
+        ///var random_number = Math.random() * 100;
+       // if ((!(game.camera.x % 500)&&game.camera.x!=0)) {
+        //    alert("ciao");
+        //}
+
+        var position = game.camera.x % 1000;
+        if ((position >= 0 && position <= 3) && game.camera.x != 0) {
+            var random_number = Math.random() * 100;
+            if (random_number >= 0 && random_number <= 20) {
+                alert("ciao");
+            }
+        }
+
+
+       // if(random_number>=19.7&&random_number<=20){
+         //   alert("ciao");
+        //}
    
         if (game.input.activePointer.isDown) {
            
                 var x = game.input.activePointer.position.x;
                 var y = game.input.activePointer.position.y;
-                var tmp;
-                for (var i = 0; i < reservedArea.area.length; i++) {
-                    tmp=tmp||(x >= (reservedArea.area[i].x-game.camera.x) && x <= (reservedArea.area[i].x_-game.camera.x)) && (y >= reservedArea.area[i].y && y <= reservedArea.area[i].y_);
-                }
+             
 
-                if (tmp) {
-                    shape[killedenemy].setPosX(reservedArea.area[killedenemy].posX-game.camera.x);
-                    turn = shape[killedenemy].captureInputData();
+                if ((x >= (reservedArea.area[0].x - game.camera.x) && x <= (reservedArea.area[0].x_ - game.camera.x)) && (y >= reservedArea.area[0].y && y <= reservedArea.area[0].y_)) {
+                    //shape.setPosX(reservedArea.area.posX-game.camera.x);
+                    turn = shape.captureInputData();
                     enemies.getFirstAlive().body.velocity.x = 0;
                     lecters.getFirstAlive().body.velocity.x = 0;
                 } else if(player.body.touching.down) {
@@ -259,54 +267,66 @@
                 player.frame = 0;
                 player.body.velocity.x = 0;
                 player.animations.stop();
+
+                var xLecter = enemies.getFirstAlive().position.x + enemyW / 2;
+                var yLecter = game.world.height - bitmapH - solidH - enemyH;
+                if (!shape) {
+                    createLecter(xLecter, yLecter, "left square bracket");
+                }
                 enemies.getFirstAlive().body.velocity.x = 0;
-                lecters.getFirstAlive().body.velocity.x = 0;
-                lecters.getFirstAlive().visible = true;
+                //lecters.getFirstAlive().body.velocity.x = 0;
+                //lecters.getFirstAlive().visible = true;
             }
         }
 
         if (game.input.activePointer.isUp) {
             if (turn == 1) {
-                var res = shape[1].checkInputData();
+                var res = shape.checkInputData();
 
                 enemy = enemies.getFirstAlive();
                 lecter = lecters.getFirstAlive();
                 if (res.point == 0 && res.npoint == 0) {
                     console.log("Error!");
+                    shape = 0;
                 } else {
                     var complex_point = (res.point / (res.npoint) * 100);
                     var figure = res.type;
-                    shape[killedenemy].bmd.clear();
-                    if (complex_point >= 70 && figure == shape[killedenemy].type) {
+                    shape.bmd.clear();
+                    if (complex_point >= 70 && figure == shape.type) {
                         enemy.kill();
                         lecter.kill();
+                        score += 20;//aumento di 20 punti
+                        scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
                     } else {
-                        if (lives.countLiving() > 0) {
+                        if (lives.countLiving() > 1) {
                             lives.getFirstAlive().kill();
                             effect_sound.play('boom');
                             var x = enemy.position.x;
                             var y = enemy.position.y;
                             createBoom(x, y);
                         } else {
+                            lives.getFirstAlive().kill();
                             player.kill();
                             audio_game.stop('audio_game');
                             effect_sound.play('boom');
                             effect_sound.play('game_over');
                             var x = enemy.position.x;
-                            var y = enemy.position.y;                        
+                            var y = enemy.position.y;
                             createBoom(x, y);
                         }
-                        lecter.kill();
-                        enemy.kill();
                     }
-                    reservedArea.area[killedenemy].x = 0;
-                    reservedArea.area[killedenemy].posX = 0;
-                    reservedArea.area[killedenemy].x_ = 0;
+                    shape = 0;             
                     player.body.velocity.x = 150; //Muovi a destra
                     player.animations.play('right');
-                    killedenemy++;
+                    reservedArea.area[0].x = 0;
+                    reservedArea.area[0].posX = 0;
+                    reservedArea.area[0].x_ = 0;
+                    lecter.kill();
+                    enemy.kill();
+
                     //console.log(" PunteggioTot:(" + (res.point / (res.npoint) * 100) + ")." + " Figura:" + res.type);
                 }
+      
                 turn = 0;
             }
         }
@@ -314,26 +334,26 @@
 
 
 
-        for (var i = killedenemy-1; i < 3; i++) {
+        for (var i = 0; i < 3; i++) {
             var posEnemyX = enemies.getAt(i).x;
 
             if (posEnemyX <= (i + 1) * 700) {
                 enemies.getAt(i).body.velocity.x = 80;
-                lecters.getAt(i).body.velocity.x = 80;
+                //lecters.getAt(i).body.velocity.x = 80;
                 enemies.getAt(i).animations.play('right');
             }
             if (posEnemyX >= (i + 1) * 880) {
                 enemies.getAt(i).body.velocity.x = -80;
-                lecters.getAt(i).body.velocity.x = -80;
+                //lecters.getAt(i).body.velocity.x = -80;
                 enemies.getAt(i).animations.play('left');
             }
 
-            posEnemyX = enemies.getAt(i).x;
-            var xLecter = posEnemyX + enemyW / 2;
+           // posEnemyX = enemies.getAt(i).x;
+            /*var xLecter = posEnemyX + enemyW / 2;
             reservedArea.area[i + 1].x = xLecter;
             reservedArea.area[i+1].posX = xLecter;
             reservedArea.area[i + 1].x_ = xLecter + bitmapW;
-            shape[i+1].setPosX(xLecter);
+            shape[i+1].setPosX(xLecter);*/
         }
 
         for (var i = 0; i < 3; i++) {
@@ -342,7 +362,7 @@
         }
 
         background.tilePosition.x = -game.camera.x; //aggiorno la posizione del background
-     
+        clearAll();
     }
   
   
@@ -381,6 +401,27 @@
  
     }
 
+    function clearAll() {
+        for (var i = 0; i < 50; i++) {
+            var posStarX = stars.getAt(i).x;
+            if (game.camera.x > posStarX) {
+                stars.getAt(i).kill();
+            }
+        }
+        for (var i = 0; i < 4; i++) {
+            var posEnemyX = enemies.getAt(i).x;
+            if (game.camera.x > posEnemyX) {
+                enemies.getAt(i).kill();
+            }
+        }
+
+        for (var i = 0; i < 4; i++) {
+            var posBoomX = explosions.getAt(i).x;
+            if (game.camera.x > posBoomX) {
+                explosions.getAt(i).kill();
+            }
+        }
+    }
 
 
     function createBoom(x, y) {
@@ -388,6 +429,16 @@
         boom.body.collideWorldBounds = true;
         boom.animations.add('stop', [0, 1, 2, 3, 4, 5], 10, false);
         boom.animations.play('stop');
+    }
+
+    function createLecter(x, y, type) {
+        var xLecter = x + enemyW / 2;
+        var yLecter = y;
+        shape = new Shape(xLecter-game.camera.x, yLecter, bitmapW, bitmapH, type);
+        shape.initializeBitmapData(game.cache.getImage('fumetto'));
+        lecter = lecters.create(xLecter, yLecter, shape.bmd);
+        reservedArea.area.splice(0,1);
+        reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + bitmapW, "y_": yLecter + bitmapH, "posX": xLecter });
     }
 
     </script>
