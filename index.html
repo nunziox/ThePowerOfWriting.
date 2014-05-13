@@ -54,6 +54,11 @@
     var bitmapW=400;
     var bitmapH=300;
 
+    var platformW=400;
+    var platformH=32;
+
+    var playerV=150;
+
     var lecters;
     var lecter;
     var shape=0;
@@ -61,6 +66,7 @@
 
     var audio_game;
     var effect_sound;
+
 
     var explosions;
     var boom;
@@ -72,7 +78,10 @@
     var turn = 0;                                                               //controlla se è il turno di scirvere o meno.
     var bomb_state = 0;                                                         //tiene conto dello stato della bomba
     
-    var rifbomb = 0;
+    var shelves;
+    var shelf;
+
+
 
     this.reservedArea = { area: [] };
      
@@ -88,8 +97,7 @@
         game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
         game.scale.setScreenSize();
 
-        
-        game.load.image('box', 'assets/box.png');
+
         game.load.image('forest', 'assets/bk_smaller2.jpg');
         game.load.image('ground', 'assets/solid.jpg');
         game.load.image('star', 'assets/star.png');
@@ -99,6 +107,7 @@
         game.load.audio('audio_game', 'assets/audio_game.mp3');
         game.load.audio('effect_sound', 'assets/effect_sound.mp3');
         game.load.image('life', 'assets/life.png');
+        game.load.image('platform', 'assets/platform.png');
         game.load.spritesheet('boom', 'assets/boom.png', boomW, boomH);
 
     }
@@ -122,11 +131,19 @@
         platforms = game.add.group();                                                      //il platform contiene la terra e le due sporgenze su cui possiamo saltare
         platforms.enableBody = true;                                                       //Noi abiliteremo la fisica per tutti gli oggetti che sono stati creati in questo gruppo
 
+
         ground = platforms.create(0, game.world.height - solidH, 'ground');                    //adesso creiamo il ground
         ground.body.immovable = true;                                                      // questo impedisce la caduta del ground
+        ground.body.collideWorldBounds=true;
 
         enemies = game.add.group();
         enemies.enableBody = true;
+
+        stars = game.add.group();                                                          //creaiamo il gruppo stars
+        stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
+
+        shelves = game.add.group();
+        shelves.enableBody = true;
 
         lecters = game.add.group();
         lecters.enableBody = true;
@@ -136,6 +153,8 @@
 
         explosions = game.add.group();
         explosions.enableBody = true;
+
+
 
 
         life = lives.create(w - 176, 16, 'life');
@@ -153,31 +172,11 @@
         player.animations.add('right', [0,1,2], 10, true);                            //animazione cammina a destr                                                                    
         cursors = game.input.keyboard.createCursorKeys();                                  //creiamo i controlli
 
-
-    
-
-
         enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
         enemies.callAll('animations.add', 'animations', 'right', [0], 10, true);
 
 
-        stars = game.add.group();                                                          //creaiamo il gruppo stars
-        stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
-
-        boxs = game.add.group();
-        boxs.enableBody = true;
-
-        /*Creo le stelle*/
-        for (var j = 1; j < 100; j=j+20) {
-            for (var i = j; i < j+10; i++) {
-                star = stars.create(i * 2 * starW, game.world.height - solidH - starH, 'star');                   //creaiamo una star nel gruppo stars
-                star.body.gravity.y = 0;                                                        //impostiamo il valore della gravità
-                star.body.bounce.y = 0.7 + Math.random() * 0.2;                                 //diamo alla stella un valore di rimbalzo casuale
-                star.body.collideWorldBounds = true;                                            //utile altrimenti esistono ma non si vedono(si possono applicare bug e forse consuma risorse)
-            }
-        }
-
-
+    
         scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });      //stampo lo score attuale
         scoreText.fixedToCamera = true;
 
@@ -192,27 +191,36 @@
         canvas = document.getElementsByTagName('body')[0];                                      //prelevo la canvas del gioco
         classicalResize();
 
-        player.body.velocity.x = 150; //Muovi a destra
+        player.body.velocity.x = playerV; //Muovi a destra
         player.animations.play('right');
     }
 
     function update() {
         
         game.physics.arcade.collide(player,platforms); //collisione tra il personaggio e il platform.
+        game.physics.arcade.collide(player,shelves); //collisione tra il personaggio e il platform.
         game.physics.arcade.collide(stars, platforms);
-        game.physics.arcade.collide(boxs, platforms);
-        game.physics.arcade.collide(boxs, player);
-        game.physics.arcade.collide(boxs, stars);
         game.physics.arcade.overlap(player, stars, collectStar, null, this); /* se c'è un overlap tra  players e stars viene invocato il metodo collectStar*/
-
-        
-        game.physics.arcade.collide(boxs, enemies);
         game.physics.arcade.collide(enemies, platforms);
 
+        if(enemies.countLiving()>0){
+            game.physics.arcade.overlap(enemies.getFirstAlive(), player, match, null, this);
+        }
 
-        createRandomElementInMap(enemies,20,1000);
+        if(shelves.countLiving()>0){
+         game.physics.arcade.overlap(shelves.getFirstAlive(), player, match_shelves, null, this);
+        }
 
-   
+        createRandomElementInMap(game.camera.x+w,game.world.height-enemyH-solidH,enemies,18,1500,'enemy',1,0,0,0,true,true);
+        if(enemies.countLiving()>0){
+         enemies.getFirstAlive().frame = 1;
+         enemies.getFirstAlive().body.velocity.x = -80;
+        }
+
+        createRandomElementInMap(game.camera.x+w,0,stars,50,30,'star',50,starW*2,0,900,true,true);   
+        createRandomElementInMap(game.camera.x+w,game.world.height-playerW-solidH/2,shelves,50,30,'platform',Math.random()*100%3,platformW+platformW/4,platformH,0,true,true);
+
+
         if (game.input.activePointer.isDown) {
            
                 var x = game.input.activePointer.position.x;
@@ -224,7 +232,10 @@
                     enemies.getFirstAlive().body.velocity.x = 0;
                     lecters.getFirstAlive().body.velocity.x = 0;
                 } else if(player.body.touching.down) {
-                        player.body.velocity.y = -500;
+                        player.body.velocity.y = -650;
+                        player.body.velocity.x = playerV;
+
+              
                 }
               
         } 
@@ -281,7 +292,7 @@
                         }
                     }
                     shape = 0;             
-                    player.body.velocity.x = 150; //Muovi a destra
+                    player.body.velocity.x = playerV; //Muovi a destra
                     player.animations.play('right');
                     reservedArea.area[0].x = 0;
                     reservedArea.area[0].posX = 0;
@@ -296,32 +307,27 @@
             }
         }
 
-
-    
-
-        for (var i = 0; i < 3; i++) {
-            var currentEnemy = enemies.getAt(i);
-            game.physics.arcade.overlap(currentEnemy, player, match, null, this);
-        }
+   
 
         background.tilePosition.x = -game.camera.x; //aggiorno la posizione del background
         clearAll();
     }
   
-        function createRandomElementInMap(group,prob,scale){
+        function createRandomElementInMap(x,y,group,prob,scale,type,number,offsetX,offsetY,gravity,immovable,collide){
             var position = game.camera.x % scale;
-            var enemy;
             if ((position>= 0&&position<=10&&group.countLiving()==0) && game.camera.x != 0) {
-                var random_number = Math.random() * 100;
-                if (random_number >= 0 && random_number <= prob) {
-                    enemy = enemies.create(game.camera.x+w, game.world.height - enemyH - solidH, 'enemy');
-                    rifbomb = w;
-                    enemy.body.collideWorldBounds = true;
-                    enemy.frame = 1;
-                    enemy.body.velocity.x = -80;
+                 if (Phaser.Math.chanceRoll(prob)) 
+                    for(var i=0;i<number;i++){
+                      element = group.create(x+(i*offsetX),y-(i*offsetY),type);
+                      element.body.gravity.y = gravity; 
+                      element.body.immovable = immovable; 
+                      element.body.collideWorldBounds = collide;
+                    }
                 }
             }
-        }
+        
+        
+  
 
         function onSwipeUp() {
             return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
@@ -357,26 +363,39 @@
  
     }
 
+     function match_shelves(shelf, player) {
+        player.body.velocity.x = playerV;
+    }
+
     function clearAll() {
-        for (var i = 0; i < 50; i++) {
-            var posStarX = stars.getAt(i).x;
-            if (game.camera.x > posStarX) {
-                stars.getAt(i).kill();
-            }
-        }
-        for (var i = 0; i < 4; i++) {
-            var posEnemyX = enemies.getAt(i).x;
-            if (game.camera.x > posEnemyX) {
-                enemies.getAt(i).kill();
+        if(stars.countLiving()>0){
+            var posStarX = stars.getFirstAlive().x;
+            if (game.camera.x > posStarX+starW) {
+                stars.getFirstAlive().kill();
             }
         }
 
-        for (var i = 0; i < 4; i++) {
-            var posBoomX = explosions.getAt(i).x;
-            if (game.camera.x > posBoomX) {
-                explosions.getAt(i).kill();
+        if(shelves.countLiving()>0){
+            var posPlatformX = shelves.getFirstAlive().x;
+            if (game.camera.x > posPlatformX+platformW) {
+                shelves.getFirstAlive().kill();
             }
         }
+
+       if(enemies.countLiving()>0){
+            var posEnemyX = enemies.getFirstAlive().x;
+            if (game.camera.x > posEnemyX+enemyW) {
+                enemies.getFirstAlive().kill();
+            }
+        }
+
+        if(explosions.countLiving()>0){
+            var posBoomX = explosions.getFirstAlive().x;
+            if (game.camera.x > posBoomX) {
+                explosions.getFirstAlive().kill();
+            }
+        }
+
     }
 
 
