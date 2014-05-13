@@ -72,6 +72,7 @@
     var turn = 0;                                                               //controlla se è il turno di scirvere o meno.
     var bomb_state = 0;                                                         //tiene conto dello stato della bomba
     
+    var rifbomb = 0;
 
     this.reservedArea = { area: [] };
      
@@ -95,7 +96,8 @@
         game.load.spritesheet('enemy', 'assets/bombe_.png', enemyW, enemyH);
         game.load.spritesheet('dude', 'assets/player.png', playerW, playerH);
         game.load.image('fumetto', 'assets/fumetto.jpg');
-        game.load.audio('audio_game', 'assets/audio_game.mp3');        game.load.audio('effect_sound', 'assets/effect_sound.mp3');
+        game.load.audio('audio_game', 'assets/audio_game.mp3');
+        game.load.audio('effect_sound', 'assets/effect_sound.mp3');
         game.load.image('life', 'assets/life.png');
         game.load.spritesheet('boom', 'assets/boom.png', boomW, boomH);
 
@@ -111,7 +113,9 @@
 
         audio_game = game.add.audio('audio_game');
         effect_sound = game.add.audio('effect_sound');
-        audio_game.addMarker('audio_game', 0, 7.8, 0.2, true);        effect_sound.addMarker('boom', 0, 2, 0.7, false);        effect_sound.addMarker('game_over', 2.2, 3.75, 1, false);
+        audio_game.addMarker('audio_game', 0, 7.8, 0.2, true);
+        effect_sound.addMarker('boom', 0, 2, 0.7, false);
+        effect_sound.addMarker('game_over', 2.2, 3.75, 1, false);
         audio_game.play('audio_game');
   
         background = game.add.tileSprite(0, 0,w,h,'forest');             
@@ -150,12 +154,7 @@
         cursors = game.input.keyboard.createCursorKeys();                                  //creiamo i controlli
 
 
-        //Creo nemici
-        for (var i = 1; i < 4; i++) {
-            enemy = enemies.create(i * 700, game.world.height - enemyH - solidH, 'enemy');
-            enemy.body.bounce.y = 0.2;
-            enemy.body.collideWorldBounds = true;
-        }
+    
 
 
         enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
@@ -210,28 +209,9 @@
         game.physics.arcade.collide(boxs, enemies);
         game.physics.arcade.collide(enemies, platforms);
 
-       
 
+        createRandomElementInMap(enemies,20,1000);
 
-        //player.body.velocity.x = 0;
-
-        ///var random_number = Math.random() * 100;
-       // if ((!(game.camera.x % 500)&&game.camera.x!=0)) {
-        //    alert("ciao");
-        //}
-
-        var position = game.camera.x % 1000;
-        if ((position >= 0 && position <= 3) && game.camera.x != 0) {
-            var random_number = Math.random() * 100;
-            if (random_number >= 0 && random_number <= 20) {
-                alert("ciao");
-            }
-        }
-
-
-       // if(random_number>=19.7&&random_number<=20){
-         //   alert("ciao");
-        //}
    
         if (game.input.activePointer.isDown) {
            
@@ -240,27 +220,14 @@
              
 
                 if ((x >= (reservedArea.area[0].x - game.camera.x) && x <= (reservedArea.area[0].x_ - game.camera.x)) && (y >= reservedArea.area[0].y && y <= reservedArea.area[0].y_)) {
-                    //shape.setPosX(reservedArea.area.posX-game.camera.x);
                     turn = shape.captureInputData();
                     enemies.getFirstAlive().body.velocity.x = 0;
                     lecters.getFirstAlive().body.velocity.x = 0;
                 } else if(player.body.touching.down) {
                         player.body.velocity.y = -500;
-                    /*if (Math.floor(game.input.x / (game.width / 2)) === LEFT) {
-                        player.body.velocity.x = -150; //Muovi a sinistra
-                        player.animations.play('left');
-                    }
-
-                    if (Math.floor(game.input.x / (game.width / 2)) === RIGHT) {
-                        player.body.velocity.x = 150; //Muovi a destra
-                        player.animations.play('right');
-                    }*/
                 }
               
-        } /*else {
-            player.animations.stop();
-            player.frame = 0;
-        }*/
+        } 
 
         if (enemies.countLiving() > 0) {
             if (enemies.getFirstAlive().position.x - player.position.x < playerW + 20) {
@@ -274,8 +241,6 @@
                     createLecter(xLecter, yLecter, "left square bracket");
                 }
                 enemies.getFirstAlive().body.velocity.x = 0;
-                //lecters.getFirstAlive().body.velocity.x = 0;
-                //lecters.getFirstAlive().visible = true;
             }
         }
 
@@ -332,29 +297,7 @@
         }
 
 
-
-
-        for (var i = 0; i < 3; i++) {
-            var posEnemyX = enemies.getAt(i).x;
-
-            if (posEnemyX <= (i + 1) * 700) {
-                enemies.getAt(i).body.velocity.x = 80;
-                //lecters.getAt(i).body.velocity.x = 80;
-                enemies.getAt(i).animations.play('right');
-            }
-            if (posEnemyX >= (i + 1) * 880) {
-                enemies.getAt(i).body.velocity.x = -80;
-                //lecters.getAt(i).body.velocity.x = -80;
-                enemies.getAt(i).animations.play('left');
-            }
-
-           // posEnemyX = enemies.getAt(i).x;
-            /*var xLecter = posEnemyX + enemyW / 2;
-            reservedArea.area[i + 1].x = xLecter;
-            reservedArea.area[i+1].posX = xLecter;
-            reservedArea.area[i + 1].x_ = xLecter + bitmapW;
-            shape[i+1].setPosX(xLecter);*/
-        }
+    
 
         for (var i = 0; i < 3; i++) {
             var currentEnemy = enemies.getAt(i);
@@ -365,7 +308,20 @@
         clearAll();
     }
   
-  
+        function createRandomElementInMap(group,prob,scale){
+            var position = game.camera.x % scale;
+            var enemy;
+            if ((position>= 0&&position<=10&&group.countLiving()==0) && game.camera.x != 0) {
+                var random_number = Math.random() * 100;
+                if (random_number >= 0 && random_number <= prob) {
+                    enemy = enemies.create(game.camera.x+w, game.world.height - enemyH - solidH, 'enemy');
+                    rifbomb = w;
+                    enemy.body.collideWorldBounds = true;
+                    enemy.frame = 1;
+                    enemy.body.velocity.x = -80;
+                }
+            }
+        }
 
         function onSwipeUp() {
             return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
