@@ -11,6 +11,11 @@
     this._r = 0;
     this.bmd = 0;
     this.type = type;
+
+    this.last = new Phaser.Point();
+    this.current = new Phaser.Point();
+    this.change=0;
+    this.stroke=false;
 }
 
 
@@ -48,7 +53,9 @@ Shape.prototype.initializeBitmapData = function (img) {
     };
 
     this.bmd = game.add.bitmapData(this.bitmapW, this.bitmapH);
-    this.bmd.context.drawImage(img, 0, 0,this.bitmapW,this.bitmapH);
+    if(img!='null'){
+     this.bmd.context.drawImage(img, 0, 0,this.bitmapW,this.bitmapH);
+    }
     //this.bmd.context.fillStyle = '#00CCFF';
     //this.bmd.context.fillRect(0, 0, this.bitmapW, this.bitmapH);
     this.bmd.context.fillStyle = '#BBBBBB';
@@ -63,21 +70,38 @@ Shape.prototype.initializeBitmapData = function (img) {
 }
 
 Shape.prototype.captureInputData = function () {
+    
     this.bmd.context.fillStyle = '#000000';
-    var x = game.input.activePointer.position.x-this.posX;
-    var y = game.input.activePointer.position.y-this.posY;
-    this.bmd.context.fillRect(x,y, this.wsize, this.wsize);
+    this.current.x = game.input.activePointer.position.x-this.posX;
+    this.current.y = game.input.activePointer.position.y-this.posY;
 
-    for (var i = 0; i < this.wsize; i++) {
-        for (j = 0; j < this.wsize; j++) {
-            if (!this.isXY(x + i, y + j)) {
-                this._points[this._points.length] = new Point(x + i, y + j);
-            }
-        }
+    if(this.stroke){
+            if (this.last.x != 0 && this.last.y !=0 )
+            {
+                var dist = this.current.distance(this.last, true)
+                var step = dist *this.wsize*2;
+
+                for (var i = 0; i < step; i++){            
+                    this.last = Phaser.Point.interpolate(this.last, this.current, i/step, this.last)
+                    this.bmd.context.fillRect(this.last.x,this.last.y, this.wsize, this.wsize);
+                    this.savePoint(this.last.x,this.last.y);
+                }
+        
+            } 
     }
 
+    this.last.x = this.current.x;
+    this.last.y = this.current.y;
+
+    this.bmd.context.fillRect(this.current.x,this.current.y,this.wsize,this.wsize);
+    this.savePoint(this.current.x,this.current.y);
+    this.stroke=true;
     this.bmd.dirty = true;
     return 1;
+}
+
+Shape.prototype.savePoint = function (x,y) {
+    this._points[this._points.length] = new Point(x,y);
 }
 
 

@@ -1,0 +1,122 @@
+<html>
+
+ <head>
+     <title>Game</title>
+     <script type="text/javascript" src="js/dollar.js"></script>
+     <script type="text/javascript" src="js/phaser.min.js"></script>
+     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+     <script src="js/gesture.js"></script>
+ </head>
+
+  <body>
+    <script> 
+
+        var w = window.innerWidth * window.devicePixelRatio,h = window.innerHeight * window.devicePixelRatio;
+        var game = new Phaser.Game(w, h, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
+
+        var platforms,gesture,ground;
+        var solidH = 100,solidW = 100;
+
+        var bmd;
+        var current, last, change;
+        var stroke=false;
+
+
+        function preload() {
+        	/*Imposta limiti di risoluzione 2048x1536 retina display */
+        	game.scale.maxWidth = 1920;
+        	game.scale.maxHeight = 1080;
+
+        	/*Vogliamo scalare fino a quando possibile, ma proporzionalmente*/
+        	game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
+        	game.scale.setScreenSize();
+
+            game.load.image('forest', 'assets/bksprite.png');
+            game.load.image('ground', 'assets/solid.jpg');
+        }
+
+    	function create() {                   
+         platforms = game.add.group();                                                      
+         platforms.enableBody = true; 
+
+         ground = platforms.create(0, game.world.height - solidH, 'ground');                    //adesso creiamo il ground
+         ground.body.immovable = true;                                                      // questo impedisce la caduta del ground
+         ground.body.collideWorldBounds=true;   
+
+         bmd = game.add.bitmapData(w,h);
+         bmd.context.fillStyle = '#00CCFF';
+         bmd.context.fillRect(0,0,w,h);
+
+
+         bmd.context.fillStyle = '#FFFFFF';
+
+
+         background = game.add.sprite(0, 0, bmd);
+         
+         last = new Phaser.Point();
+         current = new Phaser.Point();
+
+    	}
+        
+
+    	function update() {
+
+        if (game.input.activePointer.isDown)
+        {
+
+        current.x = game.input.activePointer.position.x;
+        current.y = game.input.activePointer.position.y;
+
+        if(stroke){
+            if (last.x != 0 && last.y !=0 )
+            {
+                var dist = current.distance(last, true)
+                var step = dist *10;
+
+                for (var i = 0; i < step; i++){            
+                    last = Phaser.Point.interpolate(last, current, i/step, last)
+                    bmd.context.fillRect(last.x, last.y, 5, 5);
+                }
+        
+            } else {
+            
+            }
+        }
+
+        bmd.context.fillRect(game.input.activePointer.position.x, game.input.activePointer.position.y, 5, 5);
+
+        last.x = current.x;
+        last.y = current.y;
+
+
+        //  Because we're changing the context manually, we need to tell Phaser the texture is dirty.
+        //  You only need to do this in WebGL mode. In Canvas it's not needed.
+        bmd.dirty = true;
+        stroke=true;
+        }
+
+
+         if (game.input.activePointer.isUp){
+            stroke=false;
+         }
+
+    }
+        
+
+        function render(){
+
+
+        }
+
+        /*var canvas = document.getElementsByTagName('body')[0];  
+        canvas.addEventListener ("mousemove", function (evt){
+            bmd.context.fillRect(evt.clientX,evt.clientY, 5, 5); 
+            bmd.dirty=true;
+        }, false);*/
+      
+
+
+
+     </script>
+  </body>
+ </html>
