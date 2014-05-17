@@ -1,4 +1,4 @@
-    var game = new Phaser.Game(w, h, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
+    var game = new Phaser.Game(w,h, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
 
     function preload() {
         gameSet();
@@ -36,19 +36,22 @@
          game.physics.arcade.overlap(medicals.getFirstAlive(), player, matchMedical, null, this);
         }
 
-        createRandomElementInMap(game.camera.x+w,game.world.height-enemyH-solidH,enemies,30,1500,'enemy',1,0,0,0,true,true);
-        if(enemies.countLiving()>0){
-         enemies.getFirstAlive().frame = 1;
-         enemies.getFirstAlive().body.velocity.x = -80;
+        if(dino_state!=DINO.CLOUD){
+         createRandomElementInMap(game.camera.x+w,game.world.height-enemyH-solidH,enemies,30,1500,'enemy',1,0,0,0,true,true);
+         if(enemies.countLiving()>0){
+          enemies.getFirstAlive().frame = 1;
+          enemies.getFirstAlive().body.velocity.x = -80;
+         }
         }
  
         createRandomElementInMap(game.camera.x+w,game.world.height-playerH-solidH-platformH,shelves,50,263,'platform',Math.random()*100%3,platformW+platformW/4,platformH,0,true,true);
 
-        createRandomElementInMap(game.camera.x+w,game.world.height-solidH-medicalH,medicals,30,6000,'medical',1,0,0,0,true,true);
+        createRandomElementInMap(game.camera.x+w,game.world.height-solidH-medicalH,medicals,50,6000,'medical',1,0,0,0,true,true);
   
         createRandomElementInMap(game.camera.x+w,game.world.height-solidH-starH,stars,50,13,'star',10,starW*2,0,0,true,true);
 
-        createRandomElementInMap(game.camera.x+w,game.world.height-solidH-diamondH,diamonds,30,3000,'diamond',1,0,0,0,true,true);
+        createRandomElementInMap(game.camera.x+w,game.world.height-solidH-diamondH,diamonds,50,2000,'diamond',1,0,0,0,true,true);
+    
 
 
         if (game.input.activePointer.isDown) {
@@ -62,11 +65,10 @@
                     enemies.getFirstAlive().body.velocity.x = 0;
                     lecters.getFirstAlive().body.velocity.x = 0;
                 } else{
-                    //gesture.setPosX(-game.camera.x);
                     gturn=gesture.captureInputData();
                 } 
         } 
-
+   
         if (enemies.countLiving() > 0) {
             if (enemies.getFirstAlive().position.x - player.position.x < playerW + 20) {
                 player.frame = 0;
@@ -85,14 +87,24 @@
         if(start_time+10==updateTimer()){
             player.animations.play('right');
             dino_state=DINO.NORMAL;
+            player.body.velocity.x=playerV;
+            player.body.collideWorldBounds=true;
+            player.body.position.y=game.world.height-playerH-solidH;
+        }
+
+
+        if(dino_state==DINO.CLOUD){
+            player.body.position.y=h/2-playerH-shelfH;
+            player.body.velocity.x=playerV*3;
+            score += 10;//aumento di 20 punti
+            scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
         }
 
         if (game.input.activePointer.isUp) {
 
             if(gturn==1){
                 var res=gesture.checkInputData();
-                //alert(res.type);
-                
+
                 if(res.type=='null'){
                    if(player.body.touching.down) {
                      player.body.velocity.y = -600;
@@ -104,6 +116,16 @@
                      start_time=updateTimer();
                      dino_state=DINO.SUPERBLU;
                      symbols.getFirstAlive().kill();
+                    }
+                }else if(res.type=='rectangle'){
+                    if(symbols.countLiving()>0){
+                     player.animations.play('cloud');
+                     start_time=updateTimer();
+                     dino_state=DINO.CLOUD
+                     symbols.getFirstAlive().kill();
+                     player.body.velocity.x=2*playerV;
+                     player.body.collideWorldBounds=false;
+                     player.body.position.y=h/2-playerH;
                     }
                 }
 
@@ -168,9 +190,10 @@
 
         background.position.x = -game.camera.x; //aggiorno la posizione del background
         clearAll();
-
     
     }
+
+ 
     
     function render() {
         //game.debug.cameraInfo(game.camera, 32, 32);
@@ -216,6 +239,9 @@
                 audio_game.stop('audio_game');
                 effect_sound.play('game_over');
             }
+        }else{
+          score += 1000;                                //aumento lo score di 10 punti
+          scoreText.text = 'Score: ' + score;         //inserisco un nuovo valore nella scritta
         }            
     }
 

@@ -1,6 +1,7 @@
 /*utility variable*/
-var w = window.innerWidth * window.devicePixelRatio,h = window.innerHeight * window.devicePixelRatio;
-
+ //var w = window.innerWidth * window.devicePixelRatio,h = window.innerHeight * window.devicePixelRatio;
+ var w=1920;
+ var h=1080;
 
 /*groups and sprite*/
  var platforms,ground;
@@ -28,11 +29,11 @@ var w = window.innerWidth * window.devicePixelRatio,h = window.innerHeight * win
  var cactusW=80,cactusH=120;
  var medicalW=32,medicalH=32;
  var diamondW=32,diamondH=28;
+ var shelfW=400,shelfH=32;
 
 
 /*x velocity elements*/
  var playerV=150;
-dino_state
 
 /*state variable*/
  var turn = 0;                                                               
@@ -56,13 +57,18 @@ dino_state
 
 
   function gameSet(){
+
 	/*Imposta limiti di risoluzione fullhd */
     game.scale.maxWidth = 1920;
     game.scale.maxHeight = 1080;
 
     /*Vogliamo scalare fino a quando possibile, ma proporzionalmente*/
+    game.scale.startFullScreen();
     game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    game.scale.setScreenSize();
+    game.scale.forceLandscape = true;
+    game.scale.setScreenSize(true);
+    game.scale.setShowAll();
+    game.scale.refresh()
   }
 
   function loadAllContent(){
@@ -158,7 +164,8 @@ dino_state
 
   function configureAnimationElement(){
        player.animations.add('ice', [3,4,5], 10, true);                             
-       player.animations.add('right', [0,1,2], 10, true);   
+       player.animations.add('right', [0,1,2], 10, true);
+       player.animations.add('cloud', [6], 10, true);     
 
        enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   //invoco la funzione animations.add come se la stessero chiamando i figli del gruppo   
        enemies.callAll('animations.add', 'animations', 'right', [0], 10, true);
@@ -187,4 +194,5 @@ dino_state
        audio_game.play('audio_game');
 
        reservedArea.area.push({ "x": 0, "y": 0, "x_": 0, "y_": 0,"posX":0}); 
+       dino_state=DINO.NORMAL;
    }
