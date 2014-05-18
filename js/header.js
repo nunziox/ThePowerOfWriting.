@@ -1,7 +1,7 @@
 /*utility variable*/
  //var w = window.innerWidth * window.devicePixelRatio,h = window.innerHeight * window.devicePixelRatio;
- var w=1920;
- var h=1080;
+ var w=1280;
+ var h=800;
 
 /*groups and sprite*/
  var platforms,ground;

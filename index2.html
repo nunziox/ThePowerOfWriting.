@@ -2,10 +2,10 @@
 
 <head>
     <title>Game</title>
-    <script type="text/javascript" src="js/dollar.js"></script>
+    <script type="text/javascript" src="js/ndollar.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-    <script src="js/shape.js"></script>
+    <script src="js/shapeN.js"></script>
 </head>
 
 <body>
@@ -23,36 +23,37 @@
 
         function preload() {
             game.load.image('fumetto', '../assets/fumetto.jpg');
+            game.load.image('button', '../assets/button.png');
 
         }
 
         function create() {
-            shape = new Shape(posX, posY, bitmapW, bitmapH);
-            shape.initializeBitmapData(game.cache.getImage('fumetto'), "left square bracket");
+            shape = new Shape(posX, posY, bitmapW, bitmapH,game.cache.getImage('fumetto'));
+            shape.initializeBitmapData();
             lecters = game.add.group();
             lecters.enableBody = true;
             lecter = lecters.create(0, 0, shape.bmd);
+            button1 = game.add.button(0,500, 'button', recognize, this, 2, 1, 0);
         }
 
 
         function update() {
-
-
             if (game.input.activePointer.isDown) {
                 turn=shape.captureInputData();
             }
 
             if (game.input.activePointer.isUp) {
                 if (turn == 1) {
-                    var res = shape.checkInputData();
-                    if (res.point == 0 && res.npoint == 0) {
-                        alert("Error!");
-                    } else {
-                        alert(" PunteggioTot:(" + (res.point / (res.npoint) * 100) + ")." + " Figura:" + res.type);
-                    }
+                    shape.saveStroke();
+                    shape.stroke=false;
                     turn = 0;
                 }
             }
+        }
+
+        function recognize(){
+            var res=shape.checkInputData();
+            alert(res.type + " " + res.point);
         }
 
 
