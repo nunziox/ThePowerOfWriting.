@@ -1,7 +1,9 @@
 /*utility variable*/
- //var w = window.innerWidth * window.devicePixelRatio,h = window.innerHeight * window.devicePixelRatio;
- var w=1280;
- var h=800;
+
+ 
+
+ var gameWidth = 1280;
+ var gameHeight = 800;
 
 /*groups and sprite*/
  var platforms,ground;
@@ -17,6 +19,7 @@
  var explosions,boom;
  var audio_game,effect_sound;
  var symbols,symbol;
+ var clouds,cloud;
 
  /*size of all elements*/
  var starH=22,starW=24;
@@ -30,6 +33,7 @@
  var medicalW=32,medicalH=32;
  var diamondW=32,diamondH=28;
  var shelfW=400,shelfH=32;
+ var cloudW=200,cloudH=150;
 
 
 /*x velocity elements*/
@@ -49,27 +53,13 @@
  var shape=0;
  var gesture=0;
 
+
+
  /*flow control variable*/
  var start_time;
  var score = 0,scoreText;
  this.reservedArea = { area: [] };
 
-
-
-  function gameSet(){
-
-	/*Imposta limiti di risoluzione fullhd */
-    game.scale.maxWidth = 1920;
-    game.scale.maxHeight = 1080;
-
-    /*Vogliamo scalare fino a quando possibile, ma proporzionalmente*/
-    game.scale.startFullScreen();
-    game.scale.scaleMode = Phaser.ScaleManager.SHOW_ALL;
-    game.scale.forceLandscape = true;
-    game.scale.setScreenSize(true);
-    game.scale.setShowAll();
-    game.scale.refresh()
-  }
 
   function loadAllContent(){
   	 game.load.image('medical', 'assets/firstaid.png');
@@ -83,6 +73,7 @@
      game.load.image('platform', 'assets/platform.png');
      game.load.image('platform', 'assets/platform.png');
      game.load.image('diamond', 'assets/diamond.png');
+     game.load.image('cloud', 'assets/cloud.png');
         
      game.load.spritesheet('boom', 'assets/boom.png', boomW, boomH);
      game.load.spritesheet('enemy', 'assets/bombe_.png', enemyW, enemyH);
@@ -97,7 +88,7 @@
   	backgrounds= game.add.group();  
   	backgrounds.enableBody = true;
 
- 	platforms = game.add.group();                                                     
+ 	  platforms = game.add.group();                                                     
     platforms.enableBody = true;
 
     enemies = game.add.group();
@@ -112,6 +103,9 @@
     lecters = game.add.group();
     lecters.enableBody = true;
 
+    clouds=game.add.group();
+    clouds.enableBody = true;
+    
     lives = game.add.group();
     lives.fixedToCamera = true;
 
@@ -129,6 +123,7 @@
 
     symbols=game.add.group();
     symbols.enableBody = true;
+
                                                      
   }
 
@@ -196,3 +191,5 @@
        reservedArea.area.push({ "x": 0, "y": 0, "x_": 0, "y_": 0,"posX":0}); 
        dino_state=DINO.NORMAL;
    }
+
+   

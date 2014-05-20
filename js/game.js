@@ -1,29 +1,30 @@
-    var game = new Phaser.Game(w,h, Phaser.AUTO, '', { preload: preload, create: create, update: update, render: render });
 
-    function preload() {
-        gameSet();
+
+ GameState.prototype = {
+
+    preload : function(){
         loadAllContent();
+    ;},
 
-    }
 
-
-    function create() {
+    create:  function() {
         
-        game.physics.startSystem(Phaser.Physics.ARCADE);                                   //abilito la fisica
+        game.physics.startSystem(Phaser.Physics.ARCADE);                                   
      
+
         createGroup();
         createStaticElement();
         createAudioElement();
         configureAnimationElement();                                                                                          
         setCamera();
         initializeElementParameter();
-    }
+    ;},
 
 
-    function update() {
+   update : function(){
         updateSpeed();
-        game.physics.arcade.collide(player,platforms); //collisione tra il personaggio e il platform.
-        game.physics.arcade.collide(player,shelves); //collisione tra il personaggio e il platform.
+        game.physics.arcade.collide(player,platforms); 
+        game.physics.arcade.collide(player,shelves); 
 
         game.physics.arcade.collide(stars, platforms);
         game.physics.arcade.overlap(player, stars, collectStar, null, this); /* se c'è un overlap tra  players e stars viene invocato il metodo collectStar*/
@@ -44,7 +45,8 @@
          }
         }
  
-        createRandomElementInMap(game.camera.x+w,game.world.height-playerH-solidH-platformH,shelves,50,263,'platform',Math.random()*100%3,platformW+platformW/4,platformH,0,true,true);
+        var rand=Math.random()*100;
+        createRandomElementInMap(game.camera.x+w,game.world.height-playerH-solidH-2*platformH,shelves,50,263,'platform',rand%3,platformW+platformW/4,0,0,true,true);
 
         createRandomElementInMap(game.camera.x+w,game.world.height-solidH-medicalH,medicals,50,6000,'medical',1,0,0,0,true,true);
   
@@ -52,7 +54,7 @@
 
         createRandomElementInMap(game.camera.x+w,game.world.height-solidH-diamondH,diamonds,50,2000,'diamond',1,0,0,0,true,true);
     
-
+        createRandomElementInMap(game.camera.x+w,0,clouds,50,4*cloudW,'cloud',rand%10,cloudW+rand%10,0,0,true,true);
 
         if (game.input.activePointer.isDown) {
            
@@ -84,7 +86,8 @@
             }
         }
 
-        if(start_time+10==updateTimer()){
+        var tmp=updateTimer();
+        if(tmp>=(start_time+9)&&tmp<=(start_time+10)){
             player.animations.play('right');
             dino_state=DINO.NORMAL;
             player.body.velocity.x=playerV;
@@ -100,6 +103,12 @@
             scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
         }
 
+        if (onSwipeUp() && player.body.touching.down) {
+            player.body.velocity.y = -600;
+            player.body.velocity.x=playerV;
+        }
+
+
         if (game.input.activePointer.isUp) {
 
             if(gturn==1){
@@ -107,8 +116,7 @@
 
                 if(res.type=='null'){
                    if(player.body.touching.down) {
-                     player.body.velocity.y = -600;
-                     player.body.velocity.x=playerV;
+                
                    } 
                 }else if(res.type=='circle'){
                     if(symbols.countLiving()>0){
@@ -126,6 +134,9 @@
                      player.body.velocity.x=2*playerV;
                      player.body.collideWorldBounds=false;
                      player.body.position.y=h/2-playerH;
+                     if(enemies.countLiving>0){
+                      enemies.getFirstAlive().kill();
+                     }
                     }
                 }
 
@@ -191,14 +202,15 @@
         background.position.x = -game.camera.x; //aggiorno la posizione del background
         clearAll();
     
-    }
+    ;}
 
  
     
-    function render() {
+    /*function render() {
         //game.debug.cameraInfo(game.camera, 32, 32);
         //game.debug.spriteCoords(player, 32, 200);
-    }
+    }*/
+}
   
         function createRandomElementInMap(x,y,group,prob,scale,type,number,offsetX,offsetY,gravity,immovable,collide){
             var position = game.camera.x % scale;
@@ -206,7 +218,11 @@
             if ((position>= 0&&position<=10&&group.countLiving()==0) && game.camera.x != 0) {
                  if (Phaser.Math.chanceRoll(prob)){
                      for(var i=0;i<number;i++){
-;                      element = group.create(x+(i*offsetX),y-(i*offsetY),type);
+                      if(group==clouds){
+                         element = group.create(x+(i*offsetX),y+(i*Math.random()*100),type);
+                       }else{
+                         element = group.create(x+(i*offsetX),y-(i*offsetY),type);
+                       }
                        element.body.gravity.y = gravity; 
                        element.body.immovable = immovable; 
                        element.body.collideWorldBounds = collide;
@@ -351,6 +367,13 @@
             }
         }
 
+        if(clouds.countLiving()>0){
+            var posBoomX = clouds.getFirstAlive().x;
+            if (game.camera.x > posBoomX) {
+                clouds.getFirstAlive().kill();
+            }
+        }
+
     }
 
 
@@ -380,4 +403,8 @@
         if(updateTimer()%10==0){
             playerV+=1;
         }
+    }
+
+    function onSwipeUp() {
+            return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
     }

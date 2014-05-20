@@ -10,9 +10,25 @@
  </head>
 
  <body>
-    <script src="js/header.js"></script>
-    <script src="js/game.js"></script>
- 
+     <script src="js/header.js"></script>
+      <script>
+
+      		var w = 1280;
+			var h = 800;
+			var game = new Phaser.Game(w,h, Phaser.AUTO, 'game', {create: gameDefinitions});
+
+			var BootState = function(game) {  };  
+ 			var GameState = function(game) {  };  
+
+			function gameDefinitions() {
+ 				game.state.add('BootState', BootState);
+ 				game.state.add('GameState' , GameState);
+ 				game.state.start('BootState');
+			}
+
+      </script>
+     <script src="js/boot.js"></script>
+     <script src="js/game.js"></script> 
   </body>
 
- </html>
+ </html>	
