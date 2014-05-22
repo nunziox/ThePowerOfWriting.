@@ -62,41 +62,13 @@
 
  /*flow control variable*/
  var start_time;
- var score = 0,scoreText;
- this.reservedArea = { area: [] };
 
- /*dizionario*/
- var dictionary = {};
- 
+ function createGroup(){
 
-  function loadAllContent(){
-  	 game.load.image('medical', 'assets/firstaid.png');
-     game.load.image('forest', 'assets/bksprite.png');
-     game.load.image('ground', 'assets/solid.jpg');
-     game.load.image('star', 'assets/star.png');
-     game.load.image('fumetto', 'assets/fumetto.jpg');
-     game.load.image('bullet', 'assets/bullet.png');
-     game.load.image('life', 'assets/life.png');
-     game.load.image('cactus', 'assets/cactus.png');
-     game.load.image('platform', 'assets/platform.png');
-     game.load.image('platform', 'assets/platform.png');
-     game.load.image('diamond', 'assets/diamond.png');
-     game.load.image('cloud', 'assets/cloud.png');
-        
-     game.load.spritesheet('boom', 'assets/boom.png', boomW, boomH);
-     game.load.spritesheet('enemy', 'assets/bombe_.png', enemyW, enemyH);
-     game.load.spritesheet('dude', 'assets/playerbolla.png', playerW, playerH);
+    backgrounds= game.add.group();  
+    backgrounds.enableBody = true;
 
-     game.load.audio('audio_game', 'assets/audio_game.mp3');
-     game.load.audio('effect_sound', 'assets/effect_sound.mp3');
-  }
-
-  function createGroup(){
-
-  	backgrounds= game.add.group();  
-  	backgrounds.enableBody = true;
-
- 	  platforms = game.add.group();                                                     
+    platforms = game.add.group();                                                     
     platforms.enableBody = true;
 
     enemies = game.add.group();
@@ -134,7 +106,63 @@
 
     lects=game.add.group();
     lects.enableBody = true;
+                                                     
+  }
 
+ var score = 0,scoreText;
+ this.reservedArea = { area: [] };
+
+ /*dizionario*/
+ var dictionary = {};
+ 
+
+  function loadAllContent(){
+  	 
+  }
+
+  function createGroup(){
+
+    backgrounds= game.add.group();  
+    backgrounds.enableBody = true;
+
+    platforms = game.add.group();                                                     
+    platforms.enableBody = true;
+
+    enemies = game.add.group();
+    enemies.enableBody = true;
+
+    stars = game.add.group();                                                          //creaiamo il gruppo stars
+    stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
+
+    shelves = game.add.group();
+    shelves.enableBody = true;
+
+    lecters = game.add.group();
+    lecters.enableBody = true;
+
+    clouds=game.add.group();
+    clouds.enableBody = true;
+    
+    lives = game.add.group();
+    lives.fixedToCamera = true;
+
+    explosions = game.add.group();
+    explosions.enableBody = true;
+
+    cactuses =game.add.group();
+    cactuses.enableBody = true;
+
+    medicals =game.add.group();
+    medicals.enableBody = true;
+
+    diamonds=game.add.group();
+    diamonds.enableBody = true;
+
+    symbols=game.add.group();
+    symbols.enableBody = true;
+
+    lects=game.add.group();
+    lects.enableBody = true;
                                                      
   }
 

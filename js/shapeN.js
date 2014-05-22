@@ -103,7 +103,7 @@ Shape.prototype.writeLecter=function(){
     if(this.position=='top-left'){
      this.bmd.context.fillText(this.lecter, this.textSize/3,-this.textSize/5);
     }else if(this.position=='center'){
-     this.bmd.context.fillText(this.lecter, bitmapW/2+5,bitmapH/2-110); 
+     this.bmd.context.fillText(this.lecter, this.bitmapW/2+5,this.bitmapH/2-110); 
     }
 }
 
