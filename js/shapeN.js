@@ -18,6 +18,9 @@
     this.current = new Phaser.Point();
     this.change=0;
     this.stroke=false;
+    this.lecter=0;
+    this.textSize=200;
+    this.position='center';
 }
 
 
@@ -29,9 +32,24 @@ Shape.prototype.getPosY= function () {
     return this.posY;
 }
 
-
 Shape.prototype.setPosX=function(posX){
     this.posX = posX;
+}
+
+Shape.prototype.setTextSize=function(size){
+ this.textSize=size;
+}
+
+Shape.prototype.setLecter = function (lecter) {
+ this.lecter=lecter;
+}
+
+Shape.prototype.setLecter = function (lecter) {
+ this.lecter=lecter;
+}
+
+Shape.prototype.setPosition = function (position) {
+ this.position=position;
 }
 
 Shape.prototype.clearInputData = function () {
@@ -49,27 +67,12 @@ Shape.prototype.clearInputData = function () {
     this.rsize = this.bitmapH / 10;
     this.wsize = this.bitmapH / 30;
 
+    this.writeLecter();
+
 }
 
-Shape.prototype.initializeBitmapData = function () {
-    /*var oReq = new XMLHttpRequest();
-    oReq.open("get", "../json/shape.json", false);
-    oReq.send();
-    var json=JSON.parse(oReq.responseText);*/
 
-    /*var json = {
-        "shape": [
-            {
-                "name": "left square bracket",
-                "pixelArray": [{ "x": 0, "y": 0 }, { "x": 0, "y": 1 }, { "x": 0, "y": 2 }, { "x": 0, "y": 3 }, { "x": 0, "y": 4 }, { "x": 0, "y": 5 }, { "x": 0, "y": 6 }, { "x": 0, "y": 7 },
-                              { "x": 1, "y": 0 }, { "x": 2, "y": 0 }, { "x": 3, "y": 0 },
-                              { "x": 1, "y": 7 }, { "x": 2, "y": 7 }, { "x": 3, "y": 7 }
-                ],
-                "centerX": 2,
-                "centerY": 4
-            }
-        ]
-    };*/
+Shape.prototype.initializeBitmapData = function () {
 
     this.bmd = game.add.bitmapData(this.bitmapW, this.bitmapH);
     if(this.img!='null'){
@@ -80,13 +83,32 @@ Shape.prototype.initializeBitmapData = function () {
 
     this._strokes = new Array();
     this._points = new Array();
-    this._r = new NDollarRecognizer(0);
+
+
+    this._r = new NDollarRecognizer();
+   
 
     this.rsize = this.bitmapH / 10;
     this.wsize = this.bitmapH / 30;
 
-    //this.addShape(this.type, json);
+    this.writeLecter();
 }
+
+
+Shape.prototype.writeLecter=function(){
+    this.bmd.context.textBaseline = "top";
+    this.bmd.context.textAlign = 'center';
+    this.bmd.context.fillStyle = "Red";
+    this.bmd.context.font = "Bold "+this.textSize+"px"+ " Arial";
+    if(this.position=='top-left'){
+     this.bmd.context.fillText(this.lecter, this.textSize/3,-this.textSize/5);
+    }else if(this.position=='center'){
+     this.bmd.context.fillText(this.lecter, bitmapW/2+5,bitmapH/2-110); 
+    }
+}
+
+
+
 
 Shape.prototype.captureInputData = function () {
     
@@ -122,9 +144,6 @@ Shape.prototype.captureInputData = function () {
 Shape.prototype.savePoint = function (x,y) {
     this._points[this._points.length] = new Point(x,y);
 }
-
-
-
 
 Shape.prototype.saveStroke = function () {
   if(this._points.length > 0){

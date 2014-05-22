@@ -2,22 +2,22 @@
 
 <head>
     <title>Game</title>
-    <script type="text/javascript" src="js/ndollar.js"></script>
     <script type="text/javascript" src="js/phaser.min.js"></script>
     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script type="text/javascript" src="js/ndollar.js"></script>
     <script src="js/shapeN.js"></script>
 </head>
 
 <body>
     <script>
 
-        var game = new Phaser.Game(1920,1080, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
+        var game = new Phaser.Game(800,600, Phaser.CANVAS, 'phaser-example', { preload: preload, create: create, update: update });
         var turn = 0;
 
         var bitmapW = 400;
         var bitmapH = 300;
-        var posX = 0;
-        var posY = 0;
+        var posX = 100;
+        var posY = 100;
         var shape;
         var lecters;
 
@@ -29,10 +29,12 @@
 
         function create() {
             shape = new Shape(posX, posY, bitmapW, bitmapH,game.cache.getImage('fumetto'));
+            shape.setLecter("D");
+                   shape.setTextSize(50);
             shape.initializeBitmapData();
             lecters = game.add.group();
             lecters.enableBody = true;
-            lecter = lecters.create(0, 0, shape.bmd);
+            lecter = lecters.create(posX, posY, shape.bmd);
             button1 = game.add.button(0,500, 'button', recognize, this, 2, 1, 0);
         }
 

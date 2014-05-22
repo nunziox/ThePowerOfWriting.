@@ -14,6 +14,7 @@
  var player;
  var medicals,medical;
  var lecters,lecter;
+ var lect,lects;
  var shelves,shelf;
  var lives,live;
  var explosions,boom;
@@ -27,17 +28,18 @@
  var enemyH = 89,enemyW = 89;
  var boomH = 94,boomW = 95;
  var solidH = 100,solidW = 100;
- var bitmapW=400,bitmapH=300;
+ var bitmapW=200,bitmapH=200;
  var platformW=400,platformH=32;
  var cactusW=80,cactusH=120;
  var medicalW=32,medicalH=32;
  var diamondW=32,diamondH=28;
  var shelfW=400,shelfH=32;
  var cloudW=200,cloudH=150;
+ var lectW=75,lectH=75;
 
 
 /*x velocity elements*/
- var playerV=150;
+ var playerV=170;
 
 /*state variable*/
  var turn = 0;                                                               
@@ -46,12 +48,15 @@
  var dino_state;
  var DINO = {
   NORMAL : {value: 0}, 
-  SUPERBLU: {value: 1}
+  SUPERBLU: {value: 1},
+  STOPPED:{value:2}
 };
 
  /*istance variable*/
  var shape=0;
+ var lectshape=0;
  var gesture=0;
+
 
 
 
@@ -60,6 +65,9 @@
  var score = 0,scoreText;
  this.reservedArea = { area: [] };
 
+ /*dizionario*/
+ var dictionary = {};
+ 
 
   function loadAllContent(){
   	 game.load.image('medical', 'assets/firstaid.png');
@@ -123,6 +131,9 @@
 
     symbols=game.add.group();
     symbols.enableBody = true;
+
+    lects=game.add.group();
+    lects.enableBody = true;
 
                                                      
   }
@@ -190,6 +201,14 @@
 
        reservedArea.area.push({ "x": 0, "y": 0, "x_": 0, "y_": 0,"posX":0}); 
        dino_state=DINO.NORMAL;
+
+      dictionary[0]='T',
+      dictionary[1]='N',
+      dictionary[2]='D',
+      dictionary[3]='P',
+      dictionary[4]='X',
+      dictionary[5]='H',
+      dictionary[6]='I'
    }
 
    

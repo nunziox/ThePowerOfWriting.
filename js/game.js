@@ -1,5 +1,3 @@
-
-
  GameState.prototype = {
 
     preload : function(){
@@ -30,20 +28,15 @@
         game.physics.arcade.overlap(player, stars, collectStar, null, this); /* se c'è un overlap tra  players e stars viene invocato il metodo collectStar*/
         game.physics.arcade.overlap(player, cactuses,matchCactus, null, this); /* se c'è un overlap tra  players e stars viene invocato il metodo collectStar*/    
         game.physics.arcade.overlap(player, diamonds,matchDiamond, null, this); /* se c'è un overlap tra  players e stars viene invocato il metodo collectStar*/ 
-        game.physics.arcade.collide(enemies, platforms);
+        game.physics.arcade.overlap(player, lects,matchLect, null, this);
+        game.physics.arcade.overlap(player, diamonds,matchDiamond, null, this);game.physics.arcade.collide(enemies, platforms);
+
 
 
         if(medicals.countLiving()>0){
          game.physics.arcade.overlap(medicals.getFirstAlive(), player, matchMedical, null, this);
         }
 
-        if(dino_state!=DINO.CLOUD){
-         createRandomElementInMap(game.camera.x+w,game.world.height-enemyH-solidH,enemies,30,1500,'enemy',1,0,0,0,true,true);
-         if(enemies.countLiving()>0){
-          enemies.getFirstAlive().frame = 1;
-          enemies.getFirstAlive().body.velocity.x = -80;
-         }
-        }
  
         var rand=Math.random()*100;
         createRandomElementInMap(game.camera.x+w,game.world.height-playerH-solidH-2*platformH,shelves,50,263,'platform',rand%3,platformW+platformW/4,0,0,true,true);
@@ -56,6 +49,24 @@
     
         createRandomElementInMap(game.camera.x+w,0,clouds,50,4*cloudW,'cloud',rand%10,cloudW+rand%10,0,0,true,true);
 
+
+        if(!lectshape){
+            var xLecter = game.camera.x+w;
+            var yLecter = game.world.height-solidH-lectH;
+
+            lectshape = new Shape(0,0,lectW,lectH,'null');
+            lectshape.setPosition('top-left');
+            lectshape.setLecter(dictionary[parseInt(Math.random()*100%6)]);
+            lectshape.setTextSize(100);
+            lectshape.initializeBitmapData();
+        }
+        createRandomElementInMap(game.camera.x+w,game.world.height-solidH-lectH,lects,50,2000,lectshape.bmd,1,0,0,0,true,true);
+
+        if(lects.countLiving()>0){
+            lects.getFirstAlive().anchor.setTo(0.5,0.5);
+            lects.getFirstAlive().angle+=2;
+        }
+
         if (game.input.activePointer.isDown) {
            
                 var x = game.input.activePointer.position.x;
@@ -64,28 +75,12 @@
 
                 if ((x >= (reservedArea.area[0].x - game.camera.x) && x <= (reservedArea.area[0].x_ - game.camera.x)) && (y >= reservedArea.area[0].y && y <= reservedArea.area[0].y_)) {
                     turn = shape.captureInputData();
-                    enemies.getFirstAlive().body.velocity.x = 0;
-                    lecters.getFirstAlive().body.velocity.x = 0;
                 } else{
                     gturn=gesture.captureInputData();
                 } 
         } 
    
-        if (enemies.countLiving() > 0) {
-            if (enemies.getFirstAlive().position.x - player.position.x < playerW + 20) {
-                player.frame = 0;
-                player.body.velocity.x = 0;
-                player.animations.stop();
-
-                var xLecter = enemies.getFirstAlive().position.x + enemyW / 2;
-                var yLecter = game.world.height - bitmapH - solidH - enemyH;
-                if (!shape) {
-                    createLecter(xLecter, yLecter, "left square bracket");
-                }
-                enemies.getFirstAlive().body.velocity.x = 0;
-            }
-        }
-
+   
         var tmp=updateTimer();
         if(tmp>=(start_time+9)&&tmp<=(start_time+10)){
             player.animations.play('right');
@@ -103,11 +98,22 @@
             scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
         }
 
+
+       
+
         if (onSwipeUp() && player.body.touching.down) {
-            player.body.velocity.y = -600;
-            player.body.velocity.x=playerV;
+            if(dino_state==DINO.NORMAL||dino_state==DINO.SUPERBLU){
+             player.body.velocity.y = -600;
+             player.body.velocity.x=playerV;
+            }
         }
 
+        if (onSwipeRight()) {                                                      //Controllo se l'utente fa uno Swap a destra
+            if(dino_state==DINO.NORMAL||dino_state==DINO.SUPERBLU){
+                player.body.velocity.x = playerV;                                          //Muovi a destra
+                player.animations.play('right');
+            }
+        }
 
         if (game.input.activePointer.isUp) {
 
@@ -129,7 +135,7 @@
                     if(symbols.countLiving()>0){
                      player.animations.play('cloud');
                      start_time=updateTimer();
-                     dino_state=DINO.CLOUD
+                     dino_state=DINO.CLOUD;
                      symbols.getFirstAlive().kill();
                      player.body.velocity.x=2*playerV;
                      player.body.collideWorldBounds=false;
@@ -138,64 +144,31 @@
                       enemies.getFirstAlive().kill();
                      }
                     }
+                }else if(res.type=='check'){
+                 if(shape){
+                  var ris=shape.checkInputData();
+                    if(ris.type==lectshape.lecter&&ris.point>5){
+                        lecters.getFirstAlive().kill();
+                        setDinoNormal();
+                        lectshape=0;
+                    }else{
+                        shape.clearInputData();
+                    }
+                 }
                 }
 
-          
-               
-                gturn=0;
-                gesture.stroke=false;
-                gesture.clearInputData();
+                    gturn=0;
+                    gesture.stroke=false;
+                    gesture.clearInputData();
             }
 
             if (turn == 1) {
-                var res = shape.checkInputData();
-
-                enemy = enemies.getFirstAlive();
-                lecter = lecters.getFirstAlive();
-                if (res.point == 0 && res.npoint == 0) {
-                    console.log("Error!");
-                    shape = 0;
-                } else {
-                    var complex_point = (res.point / (res.npoint) * 100);
-                    var figure = res.type;
-                    shape.bmd.clear();
-                    if (complex_point >= 70 && figure == shape.type) {
-                        enemy.kill();
-                        lecter.kill();
-                        score += 20;//aumento di 20 punti
-                        scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
-                    } else {
-                        if (lives.countLiving() > 1) {
-                            lives.getFirstAlive().kill();
-                            effect_sound.play('boom');
-                            var x = enemy.position.x;
-                            var y = enemy.position.y;
-                            createBoom(x, y);
-                        } else {
-                            lives.getFirstAlive().kill();
-                            player.kill();
-                            audio_game.stop('audio_game');
-                            effect_sound.play('boom');
-                            effect_sound.play('game_over');
-                            var x = enemy.position.x;
-                            var y = enemy.position.y;
-                            createBoom(x, y);
-                        }
-                    }
-                    shape = 0;             
-                    player.body.velocity.x = playerV; //Muovi a destra
-                    player.animations.play('right');
-                    reservedArea.area[0].x = 0;
-                    reservedArea.area[0].posX = 0;
-                    reservedArea.area[0].x_ = 0;
-                    lecter.kill();
-                    enemy.kill();
-                }
-
+                shape.saveStroke();
                 shape.stroke=false;
                 turn = 0;
             }
         }
+    
 
    
 
@@ -203,13 +176,6 @@
         clearAll();
     
     ;}
-
- 
-    
-    /*function render() {
-        //game.debug.cameraInfo(game.camera, 32, 32);
-        //game.debug.spriteCoords(player, 32, 200);
-    }*/
 }
   
         function createRandomElementInMap(x,y,group,prob,scale,type,number,offsetX,offsetY,gravity,immovable,collide){
@@ -219,13 +185,15 @@
                  if (Phaser.Math.chanceRoll(prob)){
                      for(var i=0;i<number;i++){
                       if(group==clouds){
-                         element = group.create(x+(i*offsetX),y+(i*Math.random()*100),type);
+                         element = group.create(x+(i*offsetX),y+(i*Math.random()*25),type);
                        }else{
                          element = group.create(x+(i*offsetX),y-(i*offsetY),type);
                        }
+
                        element.body.gravity.y = gravity; 
                        element.body.immovable = immovable; 
                        element.body.collideWorldBounds = collide;
+
                       if(group==shelves){
                         for(var j=0;j<10;j++){
                             star = stars.create(x+(i*offsetX)+j*40,y-(i*offsetY)-platformH-starH,'star');
@@ -293,6 +261,20 @@
          score += 100;//aumento di 20 punti
          scoreText.text = 'Score: ' + score; //inserisco un nuovo valore nella scritta
         }
+    }
+
+    function matchLect(){
+
+        player.frame = 0;
+        player.body.velocity.x = 0;
+
+        setDinoStopped();
+
+        var xLecter = player.position.x+playerW-30;
+        var yLecter = game.world.height - bitmapH - solidH - enemyH;
+        createLecter(xLecter, yLecter, "left square bracket");
+        
+        lects.getFirstAlive().kill();
     }
 
     function matchCactus(){
@@ -369,13 +351,25 @@
 
         if(clouds.countLiving()>0){
             var posBoomX = clouds.getFirstAlive().x;
-            if (game.camera.x > posBoomX) {
+            if (game.camera.x > posBoomX+cloudW) {
                 clouds.getFirstAlive().kill();
             }
         }
 
     }
 
+    function setDinoNormal(){
+        player.animations.play('right');
+        player.body.velocity.x=playerV;
+        console.log("normal");
+        dino_state=DINO.NORMAL;
+    }
+
+    function setDinoStopped(){
+        player.animations.stop();
+        player.body.velocity.x=0;
+        dino_state=DINO.STOPPED;
+    }
 
     function createBoom(x, y) {
         boom = explosions.create(x, y, 'boom');
@@ -384,11 +378,17 @@
         boom.animations.play('stop');
     }
 
+
     function createLecter(x, y, type) {
         var xLecter = x + enemyW / 2;
         var yLecter = y;
-        shape = new Shape(xLecter-game.camera.x, yLecter, bitmapW, bitmapH, type);
-        shape.initializeBitmapData(game.cache.getImage('fumetto'));
+        //shape = new Shape(xLecter-game.camera.x, yLecter, bitmapW, bitmapH, type);
+        //shape.initializeBitmapData(game.cache.getImage('fumetto'));
+        shape = new Shape(xLecter-game.camera.x, yLecter,bitmapW, bitmapH,game.cache.getImage('fumetto'))
+        shape.setLecter(lectshape.lecter);
+
+
+        shape.initializeBitmapData();
         lecter = lecters.create(xLecter, yLecter, shape.bmd);
         reservedArea.area.splice(0,1);
         reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + bitmapW, "y_": yLecter + bitmapH, "posX": xLecter });
@@ -407,4 +407,8 @@
 
     function onSwipeUp() {
             return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
+    }
+
+    function onSwipeRight() {
+            return ((game.input.activePointer.position.x - game.input.activePointer.positionDown.x) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
     }
