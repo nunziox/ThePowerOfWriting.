@@ -23,7 +23,7 @@
     this.enemyH = 89,this.enemyW = 89;
     this.boomH = 94,this.boomW = 95;
     this.solidH = 100,this.solidW = 100;
-    this.bitmapW=200,this.bitmapH=200;
+    this.bitmapW=250,this.bitmapH=250;
     this.platformW=400,this.platformH=32;
     this.cactusW=80,this.cactusH=120;
     this.medicalW=32,this.medicalH=32;
@@ -33,7 +33,7 @@
     this.lectW=75,this.lectH=75;
 
     /*x velocity elements*/
-    this.playerV=170;
+    this.playerV=180;
 
     /*state variable*/
     this.turn = 0;                                                               
@@ -52,9 +52,13 @@
     this.gesture=0;
 
     this.score = 0,this.scoreText=0;
+    this.sentenceText={};
     this.reservedArea = { area: [] };
     this.dictionary = {};
 
+    this.text=[];
+    this.choseText=0;
+    this.textGroup=0;
  }
 
 
@@ -76,11 +80,13 @@
         this.configureAnimationElement();                                                                                          
         this.setCamera();
         this.initializeElementParameter();
+
+
     ;},
 
 
    update : function(){
-        updateSpeed();
+        this.updateSpeed();
         game.physics.arcade.collide(this.player,this.platforms); 
         game.physics.arcade.collide(this.player,this.shelves); 
         game.physics.arcade.collide(this.enemies,this.platforms);
@@ -91,6 +97,7 @@
         game.physics.arcade.overlap(this.player, this.diamonds,this.matchDiamond, null, this);  
         game.physics.arcade.overlap(this.player, this.lects,this.matchLect, null, this);
         game.physics.arcade.overlap(this.player, this.diamonds,this.matchDiamond, null, this);
+        game.physics.arcade.overlap(this.player, this.enemies,this.matchEnemy, null, this);
 
 
 
@@ -111,6 +118,11 @@
     
         this.createRandomElementInMap(game.camera.x+w,0,this.clouds,50,4*this.cloudW,'cloud',rand%10,this.cloudW+rand%10,0,0,true,true);
 
+        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.enemyH-this.solidH,this.enemies,30,1500,'enemy',1,0,0,0,true,true);
+         if(this.enemies.countLiving()>0){
+          this.enemies.getFirstAlive().frame = 1;
+          this.enemies.getFirstAlive().body.velocity.x = -80;
+         }
 
         if(!this.lectshape){
             var xLecter = game.camera.x+w;
@@ -118,10 +130,12 @@
 
             this.lectshape = new Shape(0,0,this.lectW,this.lectH,'null');
             this.lectshape.setPosition('top-left');
-            this.lectshape.setLecter(this.dictionary[parseInt(Math.random()*100%6)]);
+            this.lectshape.setLecter(this.text[this.choseText].charAt(parseInt(Math.random()*100%this.text[this.choseText].length)));
             this.lectshape.setTextSize(100);
             this.lectshape.initializeBitmapData();
         }
+
+
         this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.lectH,this.lects,50,2000,this.lectshape.bmd,1,0,0,0,true,true);
 
         if(this.lects.countLiving()>0){
@@ -161,7 +175,7 @@
         }
 
 
-       
+     
 
         if (onSwipeUp() && this.player.body.touching.down) {
             if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU){
@@ -213,6 +227,9 @@
                  if(this.shape){
                   var ris=this.shape.checkInputData();
                     if(ris.type==this.lectshape.lecter&&ris.point>4){
+                        
+                        this.colorSentenceLecter(this.shape.lecter);
+
                         this.lecters.getFirstAlive().kill();
                         this.setDinoNormal();
                         this.lectshape=0;
@@ -277,7 +294,17 @@
                 }
             }
         }
-    
+   
+   GameState.prototype.colorSentenceLecter= function(lecter){
+     for(var i=0;i<this.text[this.choseText].length;i++){
+      if(this.sentenceText[i].text==lecter){
+       this.sentenceText[i].fill='#FF0000';
+       this.sentenceText[i].stroke='#FF0000';
+      }
+     }
+      return 0;
+   }
+
    GameState.prototype.decreseLife= function(){
         if(this.dino_state!=this.DINO.SUPERBLU){
             if (this.lives.countLiving() > 1) {
@@ -327,6 +354,16 @@
          this.score += 100;//aumento di 20 punti
          this.scoreText.text = 'Score: ' + this.score; //inserisco un nuovo valore nella scritta
         }
+    }
+    
+    GameState.prototype.matchEnemy=function(){
+            var x = this.enemies.getFirstAlive().position.x;
+            var y = this.enemies.getFirstAlive().position.y;
+            this.decreseLife();
+            this.audio_game.stop('audio_game');
+            this.effect_sound.play('boom');
+            this.enemies.getFirstAlive().kill();
+            this.createBoom(x,y);
     }
 
     GameState.prototype.matchLect=function(){
@@ -442,16 +479,16 @@
         this.dino_state=this.DINO.STOPPED;
     }
 
-    function createBoom(x, y) {
-        boom = explosions.create(x, y, 'boom');
-        boom.body.collideWorldBounds = true;
-        boom.animations.add('stop', [0, 1, 2, 3, 4, 5], 10, false);
-        boom.animations.play('stop');
+    GameState.prototype.createBoom=function(x, y) {
+        this.boom = this.explosions.create(x, y, 'boom');
+        this.boom.body.collideWorldBounds = true;
+        this.boom.animations.add('stop', [0, 1, 2, 3, 4, 5], 10, false);
+        this.boom.animations.play('stop');
     }
 
 
     GameState.prototype.createLecter=function(x, y) {
-        var xLecter = x + this.enemyW / 2;
+        var xLecter = x;
         var yLecter = y;
         this.shape = new Shape(xLecter-game.camera.x, yLecter,this.bitmapW,this.bitmapH,game.cache.getImage('fumetto'))
         this.shape.setLecter(this.lectshape.lecter);
@@ -467,9 +504,9 @@
         return seconds;
     }
 
-    function updateSpeed(){
+     GameState.prototype.updateSpeed=function(){
         if(updateTimer()%10==0){
-            this.playerV+=1;
+            this.playerV+=1/3;
         }
     }
 
@@ -512,6 +549,7 @@
     this.platforms.enableBody = true;
 
     this.enemies = game.add.group();
+    this.enemies.enableBody = true;  
 
     this.stars = game.add.group();                                                          //creaiamo il gruppo stars
     this.stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
@@ -545,6 +583,8 @@
 
     this.lects=game.add.group();
     this.lects.enableBody = true;
+
+    this.textGroup=game.add.group();
                                                      
   }
 
@@ -564,10 +604,25 @@
        this.life = this.lives.create(w - 123, 16, 'life');
        this.life = this.lives.create(w - 70, 16, 'life');
 
-       this.scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '32px', fill: '#000' });      //stampo lo score attuale
+       this.scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreText.fixedToCamera = true;
 
+       this.text[0]="PINI";
+       this.text[1]="TINTI"
+       this.text[2]='DINI';
+       
+       this.choseText=parseInt((Math.random()*100)%(this.text.length));
+       for(var i=0;i<this.text[this.choseText].length;i++){
+        this.sentenceText[i]=game.make.text(w - 50,60+i*35, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF',stroke: "black", strokeThickness:1,align:'center'});
+        this.sentenceText[i].fixedToCamera = true;
+        this.textGroup.add(this.sentenceText[i]);
+       }
+       
   }
+
+ function generateHexColor() { 
+    return '#' + ((0.5 + 0.5 * Math.random()) * 0xFFFFFF << 0).toString(16);
+ }
 
   GameState.prototype.createAudioElement=function(){
       this.audio_game = game.add.audio('audio_game');

@@ -99,7 +99,7 @@ Shape.prototype.writeLecter=function(){
     this.bmd.context.textBaseline = "top";
     this.bmd.context.textAlign = 'center';
     this.bmd.context.fillStyle = "Red";
-    this.bmd.context.font = "Bold "+this.textSize+"px"+ " Arial";
+    this.bmd.context.font = "Bold "+this.textSize+"px"+ " Verdana";
     if(this.position=='top-left'){
      this.bmd.context.fillText(this.lecter, this.textSize/3,-this.textSize/5);
     }else if(this.position=='center'){
