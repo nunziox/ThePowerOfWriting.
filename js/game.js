@@ -16,21 +16,25 @@
     this.audio_game=0,this.effect_sound=0;
     this.symbols=0,this.symbol=0;
     this.clouds=0,this.cloud=0;
+    this.bananas=0,this.banana=0;
+    this.cilieges=0,this.ciliege=0;
 
    /*size of all elements*/
-    this.starH=22,this.starW=24;
+    this.starH=60,this.starW=60;
     this.playerH = 150,this.playerW = 233;
     this.enemyH = 89,this.enemyW = 89;
     this.boomH = 94,this.boomW = 95;
     this.solidH = 100,this.solidW = 100;
     this.bitmapW=250,this.bitmapH=250;
-    this.platformW=400,this.platformH=32;
+    this.platformW=400,this.platformH=64;
     this.cactusW=80,this.cactusH=120;
     this.medicalW=32,this.medicalH=32;
-    this.diamondW=32,this.diamondH=28;
+    this.diamondW=32,this.diamondH=32;
     this.shelfW=400,this.shelfH=32;
     this.cloudW=200,this.cloudH=150;
-    this.lectW=75,this.lectH=75;
+    this.lectW=75,this.lectH=80;
+    this.bananaH=60,this.bananaW=60;
+    this.ciliegeH=60,this.ciliegeW=60;
 
     /*x velocity elements*/
     this.playerV=180;
@@ -52,6 +56,8 @@
     this.gesture=0;
 
     this.score = 0,this.scoreText=0;
+    this.scoreBanana=0,this.scoreTextBanana=0;
+    this.scoreCiliege=0,this.scoreTextCiliege=0;
     this.sentenceText={};
     this.reservedArea = { area: [] };
     this.dictionary = {};
@@ -98,8 +104,8 @@
         game.physics.arcade.overlap(this.player, this.lects,this.matchLect, null, this);
         game.physics.arcade.overlap(this.player, this.diamonds,this.matchDiamond, null, this);
         game.physics.arcade.overlap(this.player, this.enemies,this.matchEnemy, null, this);
-
-
+        game.physics.arcade.overlap(this.player, this.bananas,this.matchBanana, null, this);
+        game.physics.arcade.overlap(this.player, this.cilieges,this.matchCiliege, null, this);
 
 
         if(this.medicals.countLiving()>0){
@@ -112,8 +118,12 @@
 
         this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.medicalH,this.medicals,50,6000,'medical',1,0,0,0,true,true);
   
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.starH,this.stars,50,13,'star',10,this.starW*2,0,0,true,true);
+        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.starH,this.stars,50,13,'star',10,this.starW+this.starW/4,0,0,true,true);
 
+        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.bananaH,this.bananas,1340,13,'banana',10,this.bananaW+this.bananaW/4,0,0,true,true);
+
+        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.ciliegeH,this.cilieges,2769,13,'ciliege',10,this.ciliegeW+this.ciliegeW/4,0,0,true,true);
+        
         this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.diamondH,this.diamonds,50,2000,'diamond',1,0,0,0,true,true);
     
         this.createRandomElementInMap(game.camera.x+w,0,this.clouds,50,4*this.cloudW,'cloud',rand%10,this.cloudW+rand%10,0,0,true,true);
@@ -136,7 +146,7 @@
         }
 
 
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.lectH,this.lects,50,2000,this.lectshape.bmd,1,0,0,0,true,true);
+        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.lectH,this.lects,30,60,this.lectshape.bmd,1,0,0,0,true,true);
 
         if(this.lects.countLiving()>0){
             this.lects.getFirstAlive().anchor.setTo(0.5,0.5);
@@ -179,7 +189,7 @@
 
         if (onSwipeUp() && this.player.body.touching.down) {
             if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU){
-             this.player.body.velocity.y = -600;
+             this.player.body.velocity.y = -700;
              this.player.body.velocity.x=this.playerV;
             }
         }
@@ -229,7 +239,10 @@
                     if(ris.type==this.lectshape.lecter&&ris.point>4){
                         
                         this.colorSentenceLecter(this.shape.lecter);
-
+                        var tmp=this.countRedWord(this.text[this.choseText].length);
+                        if(tmp==this.text[this.choseText].length){
+                           this.generateText();
+                        }
                         this.lecters.getFirstAlive().kill();
                         this.setDinoNormal();
                         this.lectshape=0;
@@ -266,6 +279,7 @@
             if ((position>= 0&&position<=10&&group.countLiving()==0) && game.camera.x != 0) {
                  if (Phaser.Math.chanceRoll(prob)){
                      for(var i=0;i<number;i++){
+
                       if(group==this.clouds){
                          element = group.create(x+(i*offsetX),y+(i*Math.random()*25),type);
                        }else{
@@ -277,8 +291,8 @@
                        element.body.collideWorldBounds = collide;
 
                       if(group==this.shelves){
-                        for(var j=0;j<10;j++){
-                            this.star = this.stars.create(x+(i*offsetX)+j*40,y-(i*offsetY)-this.platformH-this.starH,'star');
+                        for(var j=0;j<5;j++){
+                            this.star = this.stars.create(x+(i*offsetX)+j*(40+this.starW/2),y-(i*offsetY)-this.platformH-this.starH,'star');
                             this.star.body.immovable = true; 
                             this.star.body.collideWorldBounds = true;
                             this.star.body.gravity.y = 0; 
@@ -305,6 +319,16 @@
       return 0;
    }
 
+   GameState.prototype.countRedWord= function(len){
+     var c=0;
+     for(var i=0;i<len;i++){
+      if(this.sentenceText[i].fill=='#FF0000'){
+       c++;
+      }
+     }
+     return c;
+   }
+
    GameState.prototype.decreseLife= function(){
         if(this.dino_state!=this.DINO.SUPERBLU){
             if (this.lives.countLiving() > 1) {
@@ -325,42 +349,49 @@
  
     GameState.prototype.collectStar=function(player, star) {
         star.kill();                                          //rimuove la stella in cui c'è stato l'overlap.
-        this.score += 10;                                     //aumento lo score di 10 punti
-        this.scoreText.text = 'Score: ' + this.score;         //inserisco un nuovo valore nella scritta
+        this.score += 1;                                     //aumento lo score di 10 punti
+        this.scoreText.text = this.score;         //inserisco un nuovo valore nella scritta
     }
 
+    GameState.prototype.matchBanana=function(){
+      this.bananas.getFirstAlive().kill();
+      this.scoreBanana += 1; 
+      this.scoreTextBanana.text = this.scoreBanana;
+    }
+
+    GameState.prototype.matchCiliege=function(){
+      this.cilieges.getFirstAlive().kill();
+      this.scoreCiliege += 1; 
+      this.scoreTextCiliege.text = this.scoreBanana;
+    }
 
     GameState.prototype.matchDiamond=function(){
-        this.diamonds.getFirstAlive().kill();
+        /*this.diamonds.getFirstAlive().kill();
         if(this.symbols.countLiving()==0){
-         this.symbol = this.symbols.create(5+this.diamondH/2,50, 'diamond');
+         this.symbol = this.symbols.create(10,500, 'diamond');
          this.symbol.fixedToCamera = true;  
         }else if(this.symbols.countLiving()==1){
          this.symbols.getFirstAlive().kill();
-         this.symbol = this.symbols.create(5+2*this.diamondH,50, 'diamond');
+         this.symbol = this.symbols.create(10,500, 'diamond');
          this.symbol.fixedToCamera = true; 
-         this.symbol = this.symbols.create(5+this.diamondH/2,50, 'diamond');
+         this.symbol = this.symbols.create(10,570, 'diamond');
          this.symbol.fixedToCamera = true; 
         }else if(this.symbols.countLiving()==2){
          this.symbols.getFirstAlive().kill();
          this.symbols.getFirstAlive().kill();
-         this.symbol = this.symbols.create(5+3.5*this.diamondH,50, 'diamond');
+         this.symbol = this.symbols.create(10,500, 'diamond');
          this.symbol.fixedToCamera = true; 
-         this.symbol = this.symbols.create(5+2*this.diamondH,50, 'diamond');
+         this.symbol = this.symbols.create(10,570, 'diamond');
          this.symbol.fixedToCamera = true; 
-         this.symbol = this.symbols.create(5+this.diamondH/2,50, 'diamond');
+         this.symbol = this.symbols.create(10,630, 'diamond');
          this.symbol.fixedToCamera = true; 
-        }else{
-         this.score += 100;//aumento di 20 punti
-         this.scoreText.text = 'Score: ' + this.score; //inserisco un nuovo valore nella scritta
-        }
+        }*/
     }
     
     GameState.prototype.matchEnemy=function(){
             var x = this.enemies.getFirstAlive().position.x;
             var y = this.enemies.getFirstAlive().position.y;
             this.decreseLife();
-            this.audio_game.stop('audio_game');
             this.effect_sound.play('boom');
             this.enemies.getFirstAlive().kill();
             this.createBoom(x,y);
@@ -385,7 +416,7 @@
      this.cactuses.getFirstAlive().kill();
     }
      
-
+   
     GameState.prototype.matchMedical=function(){
         this.medicals.getFirstAlive().kill();
         if(this.lives.countLiving()==1){
@@ -459,6 +490,20 @@
             }
         }
 
+       if(this.bananas.countLiving()>0){
+            var posBoomX = this.bananas.getFirstAlive().x;
+            if (game.camera.x > posBoomX+this.bananaW) {
+                this.bananas.getFirstAlive().kill();
+            }
+        }        
+
+        if(this.cilieges.countLiving()>0){
+            var posBoomX = this.cilieges.getFirstAlive().x;
+            if (game.camera.x > posBoomX+this.ciliegeW) {
+                this.cilieges.getFirstAlive().kill();
+            }
+        }  
+
     }
 
     GameState.prototype.setDinoNormal=function(){
@@ -485,7 +530,6 @@
         this.boom.animations.add('stop', [0, 1, 2, 3, 4, 5], 10, false);
         this.boom.animations.play('stop');
     }
-
 
     GameState.prototype.createLecter=function(x, y) {
         var xLecter = x;
@@ -522,7 +566,7 @@
         game.load.image('medical', 'assets/firstaid.png');
         game.load.image('forest', 'assets/bksprite.png');
         game.load.image('ground', 'assets/solid.jpg');
-        game.load.image('star', 'assets/star.png');
+        game.load.image('star', 'assets/fruit.png');
         game.load.image('fumetto', 'assets/fumetto.jpg');
         game.load.image('bullet', 'assets/bullet.png');
         game.load.image('life', 'assets/life.png');
@@ -531,6 +575,8 @@
         game.load.image('platform', 'assets/platform.png');
         game.load.image('diamond', 'assets/diamond.png');
         game.load.image('cloud', 'assets/cloud.png');
+        game.load.image('banana', 'assets/banana.png');
+        game.load.image('ciliege', 'assets/ciliege.png');
         
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
         game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
@@ -584,6 +630,12 @@
     this.lects=game.add.group();
     this.lects.enableBody = true;
 
+    this.bananas=game.add.group();
+    this.bananas.enableBody = true;
+
+    this.cilieges=game.add.group();
+    this.cilieges.enableBody = true;
+
     this.textGroup=game.add.group();
                                                      
   }
@@ -604,25 +656,50 @@
        this.life = this.lives.create(w - 123, 16, 'life');
        this.life = this.lives.create(w - 70, 16, 'life');
 
-       this.scoreText = game.add.text(16, 16, 'Score: 0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
+       var element=game.add.sprite(10, 16,'star');
+       element.fixedToCamera=true;
+       element=game.add.sprite(10, 80,'banana');
+       element.fixedToCamera=true;
+       element=game.add.sprite(10, 150,'ciliege');
+       element.fixedToCamera=true;
+       
+       this.scoreText = game.add.text(90, 36, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreText.fixedToCamera = true;
+
+       this.scoreTextBanana = game.add.text(90, 96, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
+       this.scoreTextBanana.fixedToCamera = true;
+
+       this.scoreTextBanana = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
+       this.scoreTextBanana.fixedToCamera = true;
 
        this.text[0]="PINI";
        this.text[1]="TINTI"
        this.text[2]='DINI';
        
-       this.choseText=parseInt((Math.random()*100)%(this.text.length));
-       for(var i=0;i<this.text[this.choseText].length;i++){
-        this.sentenceText[i]=game.make.text(w - 50,60+i*35, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF',stroke: "black", strokeThickness:1,align:'center'});
-        this.sentenceText[i].fixedToCamera = true;
-        this.textGroup.add(this.sentenceText[i]);
-       }
+       this.generateText();
        
   }
+
+
 
  function generateHexColor() { 
     return '#' + ((0.5 + 0.5 * Math.random()) * 0xFFFFFF << 0).toString(16);
  }
+
+  GameState.prototype.generateText=function(){
+
+    game.world.remove(this.textGroup);
+    
+
+    this.textGroup=game.add.group();
+    this.sentenceText=[];
+    this.choseText=parseInt((Math.random()*100)%(this.text.length));
+    for(var i=0;i<this.text[this.choseText].length;i++){
+        this.sentenceText[i]=game.make.text(w - 50,60+i*35, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF',stroke: "black", strokeThickness:1,align:'center'});
+        this.sentenceText[i].fixedToCamera = true;
+        this.textGroup.add(this.sentenceText[i]);
+    }
+  }
 
   GameState.prototype.createAudioElement=function(){
       this.audio_game = game.add.audio('audio_game');
