@@ -3,7 +3,7 @@
     /*groups and sprite*/
     this.platforms=0,this.ground=0;
     this.background=0,this.backgrounds=0;
-    this.stars=0,this.star=0;
+    this.stars=0,this.apple=0;
     this.enemies=0,this.enemy=0;
     this.diamonds=0,this.diamon=0;  
     this.player=0;
@@ -18,6 +18,7 @@
     this.clouds=0,this.cloud=0;
     this.bananas=0,this.banana=0;
     this.cilieges=0,this.ciliege=0;
+    this.trees=0,this.tree=0;
 
    /*size of all elements*/
     this.starH=60,this.starW=60;
@@ -35,6 +36,7 @@
     this.lectW=75,this.lectH=80;
     this.bananaH=60,this.bananaW=60;
     this.ciliegeH=60,this.ciliegeW=60;
+    this.treeW=296,this.treeH=566;
 
     /*x velocity elements*/
     this.playerV=180;
@@ -43,6 +45,9 @@
     this.turn = 0;                                                               
     this.gturn=0;
     this.dino_state=0;
+    this.busy_fruit_space=0;
+    this.busy_cloud_space=0;
+    this.busy_tree_space=0;
 
     this.DINO = {
         NORMAL:{value: 0}, 
@@ -114,25 +119,29 @@
 
  
         var rand=Math.random()*100;
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.playerH-this.solidH-2*this.platformH,this.shelves,50,263,'platform',rand%3,this.platformW+this.platformW/4,0,0,true,true);
-
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.medicalH,this.medicals,50,6000,'medical',1,0,0,0,true,true);
-  
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.starH,this.stars,50,13,'star',10,this.starW+this.starW/4,0,0,true,true);
-
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.bananaH,this.bananas,1340,13,'banana',10,this.bananaW+this.bananaW/4,0,0,true,true);
-
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.ciliegeH,this.cilieges,2769,13,'ciliege',10,this.ciliegeW+this.ciliegeW/4,0,0,true,true);
-        
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.diamondH,this.diamonds,50,2000,'diamond',1,0,0,0,true,true);
-    
-        this.createRandomElementInMap(game.camera.x+w,0,this.clouds,50,4*this.cloudW,'cloud',rand%10,this.cloudW+rand%10,0,0,true,true);
-
         this.createRandomElementInMap(game.camera.x+w,game.world.height-this.enemyH-this.solidH,this.enemies,30,1500,'enemy',1,0,0,0,true,true);
-         if(this.enemies.countLiving()>0){
+         
+        
+        if(game.camera.x+w>this.busy_fruit_space){
+          this.busy_fruit_space=this.createElementInMap(game.camera.x+w,rand%20,rand%10,rand%5);
+          this.busy_fruit_space+=game.camera.x+w;
+        }
+
+        if(game.camera.x+w>this.busy_cloud_space){
+           this.busy_cloud_space=this.createCloudInMap(game.camera.x+w);
+           this.busy_cloud_space+=game.camera.x+w;
+        }
+
+        if(game.camera.x+w>this.busy_tree_space){
+           this.busy_tree_space=this.createTreeInMap(game.camera.x+w);
+           this.busy_tree_space+=game.camera.x+w;
+        }
+
+
+        if(this.enemies.countLiving()>0){
           this.enemies.getFirstAlive().frame = 1;
           this.enemies.getFirstAlive().body.velocity.x = -80;
-         }
+        }
 
         if(!this.lectshape){
             var xLecter = game.camera.x+w;
@@ -146,7 +155,7 @@
         }
 
 
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.lectH,this.lects,30,60,this.lectshape.bmd,1,0,0,0,true,true);
+        //this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.lectH,this.lects,30,60,this.lectshape.bmd,1,0,0,0,true,true);
 
         if(this.lects.countLiving()>0){
             this.lects.getFirstAlive().anchor.setTo(0.5,0.5);
@@ -180,12 +189,7 @@
         if(this.dino_state==this.DINO.CLOUD){
             this.player.body.position.y=h/2-this.playerH-this.shelfH;
             this.player.body.velocity.x=this.playerV*3;
-            this.score += 10;//aumento di 20 punti
-            this.scoreText.text = 'Score: ' + this.score; //inserisco un nuovo valore nella scritta
         }
-
-
-     
 
         if (onSwipeUp() && this.player.body.touching.down) {
             if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU){
@@ -273,37 +277,150 @@
     ;}
 }
   
+  function setCommonProperties(element){
+      element.body.gravity.y = 0; 
+      element.body.immovable = true; 
+      element.body.collideWorldBounds = true;
+  }
+
+
+  GameState.prototype.createCloudInMap=function(x){
+     var element, total=0,unit=this.cloudW;
+
+     /*creo nuvole*/
+     for(var i=0;i<30;i++){
+      element = this.clouds.create(x+(i*unit),Math.random()*100%50*3,'cloud');
+      setCommonProperties(element);
+      total+=unit;
+     }
+
+     return total;
+  }
+
+  GameState.prototype.createTreeInMap=function(x){
+     var element, total=0,unit=this.treeW-60;
+     var origin=0;
+
+     /*creo alberi*/
+     for(var i=0;i<2;i++){
+      if (Phaser.Math.chanceRoll(50)){
+       element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree');
+      }else{
+        element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree2');
+        setCommonProperties(element);
+      }
+      total+=unit;
+     }
+
+     total=total+5*unit;
+     
+     origin=parseInt(total/unit);
+      for(var i=origin;i<2+origin;i++){
+       element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree3');
+       setCommonProperties(element);
+       total+=unit;
+      }
+
+          total=total+5*unit;
+
+     return total;
+  }
+
+
+
+  GameState.prototype.createElementInMap=function(x,num_mele,num_banana,num_ciliege){
+     var element, total=0,unit=70;
+     var origin=0;
+
+     /*creo mele*/
+     for(var i=0;i<num_mele;i++){
+      element = this.stars.create(x+(i*unit),game.world.height-this.solidH-this.starH-5,'apple');
+      setCommonProperties(element);
+      total+=unit;
+     }
+
+     if(num_mele<10){
+      total+=unit*5;
+     }
+
+     /*creo ripiani*/
+     element = this.shelves.create(x+total+unit,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH,'platform');
+     setCommonProperties(element);
+
+   if (Phaser.Math.chanceRoll(50)){
+     for(var j=0;j<5;j++){
+        this.apple = this.stars.create(x+total+unit+j*(45+(2/3)*this.starW),game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH-this.starH-5,'apple');
+        setCommonProperties(element);
+     }
+   }else{
+      for(var j=0;j<5;j++){
+        this.ciliege = this.cilieges.create(x+total+unit+j*(45+(2/3)*this.ciliegeW),game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH-this.ciliegeH,'ciliege');
+        setCommonProperties(element);
+     }
+   }
+     
+     total+=this.shelfW+2*unit;
+
+     /*creo banane*/
+     origin=parseInt(total/unit);
+     for(var i=origin;i<num_banana+origin;i++){
+      element = this.bananas.create(x+(i*unit),game.world.height-this.solidH-this.bananaH-5,'banana');
+      setCommonProperties(element);
+      total+=unit;
+     }
+
+     /*creo ciliege*/
+     origin=parseInt(total/unit);
+     for(var i=origin;i<num_ciliege+origin;i++){
+      element = this.cilieges.create(x+(i*unit),game.world.height-this.solidH-this.ciliegeH,'ciliege');
+      setCommonProperties(element);
+      total+=unit;
+     }
+
+     if(num_banana<5){
+      total+=unit*5;
+     }
+
+     if(num_ciliege<5){
+      total+=unit*5;
+     }
+
+     if (Phaser.Math.chanceRoll(50)){
+     /*creo altri due ripiani*/
+      element = this.shelves.create(x+total+unit,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH,'platform');
+      setCommonProperties(element);
+      total+=this.shelfW+2*unit;  
+     }
+
+
+     if (Phaser.Math.chanceRoll(50)){
+     /*creo altri due ripiani*/
+      element = this.shelves.create(x+total+unit,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH,'platform');
+      setCommonProperties(element);
+      total+=this.shelfW+unit;
+     }
+
+
+     if (Phaser.Math.chanceRoll(50)){
+       element = this.cactuses.create(x+total+unit,game.world.height-this.solidH-this.cactusH,'cactus');
+       setCommonProperties(element);
+       total+=this.cactusW+unit;
+     }
+
+    return total;
+  }
+
+
   GameState.prototype.createRandomElementInMap=function(x,y,group,prob,scale,type,number,offsetX,offsetY,gravity,immovable,collide){
             var position = game.camera.x % scale;
             var element;
             if ((position>= 0&&position<=10&&group.countLiving()==0) && game.camera.x != 0) {
                  if (Phaser.Math.chanceRoll(prob)){
-                     for(var i=0;i<number;i++){
-
-                      if(group==this.clouds){
-                         element = group.create(x+(i*offsetX),y+(i*Math.random()*25),type);
-                       }else{
-                         element = group.create(x+(i*offsetX),y-(i*offsetY),type);
-                       }
-
+                     for(var i=0;i<number;i++){ 
+                       element = group.create(x+(i*offsetX),y-(i*offsetY),type);
                        element.body.gravity.y = gravity; 
                        element.body.immovable = immovable; 
                        element.body.collideWorldBounds = collide;
-
-                      if(group==this.shelves){
-                        for(var j=0;j<5;j++){
-                            this.star = this.stars.create(x+(i*offsetX)+j*(40+this.starW/2),y-(i*offsetY)-this.platformH-this.starH,'star');
-                            this.star.body.immovable = true; 
-                            this.star.body.collideWorldBounds = true;
-                            this.star.body.gravity.y = 0; 
-                         }
-                         if (Phaser.Math.chanceRoll(50)){
-                            this.cactus = this.cactuses.create(x+(i*offsetX),game.world.height-this.solidH-this.cactusH,'cactus');
-                            this.cactus.body.immovable = true; 
-                            this.cactus.body.collideWorldBounds = true;
-                            this.cactus.body.gravity.y = 0; 
-                         }
-                      }
                      }
                 }
             }
@@ -340,29 +457,26 @@
                 this.effect_sound.play('game_over');
                 this.game.state.start('BootState');
             }
-        }else{
-          this.score += 1000;                                //aumento lo score di 10 punti
-          this.scoreText.text = 'Score: ' + this.score;         //inserisco un nuovo valore nella scritta
-        }            
+        }          
     }
 
  
-    GameState.prototype.collectStar=function(player, star) {
-        star.kill();                                          //rimuove la stella in cui c'è stato l'overlap.
+    GameState.prototype.collectStar=function(player, apple) {
+        apple.kill();                                          //rimuove la stella in cui c'è stato l'overlap.
         this.score += 1;                                     //aumento lo score di 10 punti
         this.scoreText.text = this.score;         //inserisco un nuovo valore nella scritta
     }
 
-    GameState.prototype.matchBanana=function(){
-      this.bananas.getFirstAlive().kill();
+    GameState.prototype.matchBanana=function(player,banana){
+      banana.kill();
       this.scoreBanana += 1; 
       this.scoreTextBanana.text = this.scoreBanana;
     }
 
-    GameState.prototype.matchCiliege=function(){
-      this.cilieges.getFirstAlive().kill();
+    GameState.prototype.matchCiliege=function(player,ciliege){
+      ciliege.kill();
       this.scoreCiliege += 1; 
-      this.scoreTextCiliege.text = this.scoreBanana;
+      this.scoreTextCiliege.text = this.scoreCiliege;
     }
 
     GameState.prototype.matchDiamond=function(){
@@ -504,6 +618,18 @@
             }
         }  
 
+        if(this.trees.countLiving()>0){
+            var posBoomX = this.trees.getFirstAlive().x;
+            if (game.camera.x > posBoomX+this.treeW) {
+                this.trees.getFirstAlive().kill();
+            }
+        } 
+
+    }
+
+    function clear(group){
+
+
     }
 
     GameState.prototype.setDinoNormal=function(){
@@ -566,7 +692,7 @@
         game.load.image('medical', 'assets/firstaid.png');
         game.load.image('forest', 'assets/bksprite.png');
         game.load.image('ground', 'assets/solid.jpg');
-        game.load.image('star', 'assets/fruit.png');
+        game.load.image('apple', 'assets/fruit.png');
         game.load.image('fumetto', 'assets/fumetto.jpg');
         game.load.image('bullet', 'assets/bullet.png');
         game.load.image('life', 'assets/life.png');
@@ -577,6 +703,9 @@
         game.load.image('cloud', 'assets/cloud.png');
         game.load.image('banana', 'assets/banana.png');
         game.load.image('ciliege', 'assets/ciliege.png');
+        game.load.image('tree', 'assets/tree.png');
+        game.load.image('tree2', 'assets/tree2.png');
+        game.load.image('tree3', 'assets/tree3.png');
         
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
         game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
@@ -590,6 +719,12 @@
   GameState.prototype.createGroup=function(){
     this.backgrounds= game.add.group();  
     this.backgrounds.enableBody = true;
+
+    this.clouds=game.add.group();
+    this.clouds.enableBody = true;
+
+    this.trees=game.add.group();
+    this.trees.enableBody = true;
 
     this.platforms = game.add.group();                                                     
     this.platforms.enableBody = true;
@@ -606,8 +741,7 @@
     this.lecters = game.add.group();
     this.lecters.enableBody = true;
 
-    this.clouds=game.add.group();
-    this.clouds.enableBody = true;
+
     
     this.lives = game.add.group();
     this.lives.fixedToCamera = true;
@@ -656,7 +790,7 @@
        this.life = this.lives.create(w - 123, 16, 'life');
        this.life = this.lives.create(w - 70, 16, 'life');
 
-       var element=game.add.sprite(10, 16,'star');
+       var element=game.add.sprite(10, 16,'apple');
        element.fixedToCamera=true;
        element=game.add.sprite(10, 80,'banana');
        element.fixedToCamera=true;
@@ -669,8 +803,8 @@
        this.scoreTextBanana = game.add.text(90, 96, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreTextBanana.fixedToCamera = true;
 
-       this.scoreTextBanana = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
-       this.scoreTextBanana.fixedToCamera = true;
+       this.scoreTextCiliege = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
+       this.scoreTextCiliege.fixedToCamera = true;
 
        this.text[0]="PINI";
        this.text[1]="TINTI"
