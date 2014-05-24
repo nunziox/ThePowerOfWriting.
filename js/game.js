@@ -19,6 +19,7 @@
     this.bananas=0,this.banana=0;
     this.cilieges=0,this.ciliege=0;
     this.trees=0,this.tree=0;
+    this.fruits=0,this.fruit=0;
 
    /*size of all elements*/
     this.starH=60,this.starW=60;
@@ -37,6 +38,7 @@
     this.bananaH=60,this.bananaW=60;
     this.ciliegeH=60,this.ciliegeW=60;
     this.treeW=296,this.treeH=566;
+    this.fruitW=60,this.fruitH=60;
 
     /*x velocity elements*/
     this.playerV=180;
@@ -111,7 +113,7 @@
         game.physics.arcade.overlap(this.player, this.enemies,this.matchEnemy, null, this);
         game.physics.arcade.overlap(this.player, this.bananas,this.matchBanana, null, this);
         game.physics.arcade.overlap(this.player, this.cilieges,this.matchCiliege, null, this);
-
+        game.physics.arcade.overlap(this.player, this.fruits,this.matchFruit, null, this);
 
         if(this.medicals.countLiving()>0){
          game.physics.arcade.overlap(this.medicals.getFirstAlive(),this.player, this.matchMedical, null, this);
@@ -119,11 +121,11 @@
 
  
         var rand=Math.random()*100;
-        this.createRandomElementInMap(game.camera.x+w,game.world.height-this.enemyH-this.solidH,this.enemies,30,1500,'enemy',1,0,0,0,true,true);
+        //this.createRandomElementInMap(game.camera.x+w,game.world.height-this.enemyH-this.solidH,this.enemies,30,1500,'enemy',1,0,0,0,true,true);
          
         
         if(game.camera.x+w>this.busy_fruit_space){
-          this.busy_fruit_space=this.createElementInMap(game.camera.x+w,rand%20,rand%10,rand%5);
+          this.busy_fruit_space=this.createElementInMap(game.camera.x+w,rand%40,rand%25,rand%10);
           this.busy_fruit_space+=game.camera.x+w;
         }
 
@@ -138,29 +140,16 @@
         }
 
 
-        if(this.enemies.countLiving()>0){
-          this.enemies.getFirstAlive().frame = 1;
-          this.enemies.getFirstAlive().body.velocity.x = -80;
-        }
-
-        if(!this.lectshape){
-            var xLecter = game.camera.x+w;
-            var yLecter = game.world.height-this.solidH-this.lectH;
-
-            this.lectshape = new Shape(0,0,this.lectW,this.lectH,'null');
-            this.lectshape.setPosition('top-left');
-            this.lectshape.setLecter(this.text[this.choseText].charAt(parseInt(Math.random()*100%this.text[this.choseText].length)));
-            this.lectshape.setTextSize(100);
-            this.lectshape.initializeBitmapData();
-        }
-
-
-        //this.createRandomElementInMap(game.camera.x+w,game.world.height-this.solidH-this.lectH,this.lects,30,60,this.lectshape.bmd,1,0,0,0,true,true);
 
         if(this.lects.countLiving()>0){
             this.lects.getFirstAlive().anchor.setTo(0.5,0.5);
             this.lects.getFirstAlive().angle+=2;
         }
+
+        for(var i=0;i<this.fruits.countLiving();i++){
+         this.fruits.getAt(i).angle+=1;
+        }
+    
 
         if (game.input.activePointer.isDown) {
            
@@ -301,8 +290,7 @@
      var element, total=0,unit=this.treeW-60;
      var origin=0;
 
-     /*creo alberi*/
-     for(var i=0;i<2;i++){
+     /*for(var i=0;i<2;i++){
       if (Phaser.Math.chanceRoll(50)){
        element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree');
       }else{
@@ -321,7 +309,7 @@
        total+=unit;
       }
 
-          total=total+5*unit;
+          total=total+5*unit;*/
 
      return total;
   }
@@ -339,13 +327,32 @@
       total+=unit;
      }
 
+     /*creo primo tipo di albero sopra le mele*/
+     for(var i=0;i<2;i++){
+      if (Phaser.Math.chanceRoll(50)){
+       element = this.trees.create(x+(i*this.treeW-60),game.world.height-this.solidH-this.treeH,'tree');
+      }else{
+        element = this.trees.create(x+(i*this.treeW-60),game.world.height-this.solidH-this.treeH,'tree2');
+        setCommonProperties(element);
+      }
+     }
+
      if(num_mele<10){
       total+=unit*5;
      }
 
+
      /*creo ripiani*/
      element = this.shelves.create(x+total+unit,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH,'platform');
      setCommonProperties(element);
+
+     /*creo bombe*/
+    if (Phaser.Math.chanceRoll(60)){
+     element = this.enemies.create(x+total+unit,game.world.height-this.solidH-this.enemyH,'enemy');          
+     element.body.velocity.x = -60;
+     element.frame = 1;
+     setCommonProperties(element);
+    }
 
    if (Phaser.Math.chanceRoll(50)){
      for(var j=0;j<5;j++){
@@ -369,6 +376,12 @@
       total+=unit;
      }
 
+    /*creo secondo tipo di albero*/
+      for(var i=origin;i<2+origin;i++){
+       element = this.trees.create(x+(i*unit)+(i-origin)*(this.treeW-60),game.world.height-this.solidH-this.treeH,'tree3');
+       setCommonProperties(element);
+      }
+
      /*creo ciliege*/
      origin=parseInt(total/unit);
      for(var i=origin;i<num_ciliege+origin;i++){
@@ -377,35 +390,86 @@
       total+=unit;
      }
 
+
+
      if(num_banana<5){
       total+=unit*5;
      }
 
+
+  
      if(num_ciliege<5){
       total+=unit*5;
      }
 
      if (Phaser.Math.chanceRoll(50)){
-     /*creo altri due ripiani*/
+     /*creo altri due ripiani - questo è il primo*/
       element = this.shelves.create(x+total+unit,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH,'platform');
       setCommonProperties(element);
-      total+=this.shelfW+2*unit;  
+
+      if (Phaser.Math.chanceRoll(25)){
+       element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH-this.fruitH-10,'morared');
+       element.anchor.setTo(0.5,0.5);
+       setCommonProperties(element);
+      }
+
+      if (Phaser.Math.chanceRoll(20)){
+       element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.solidH-this.fruitH-10,'morablack');
+       element.anchor.setTo(0.5,0.5);
+       setCommonProperties(element);
+      }
+
+      total+=this.shelfW+2*unit; 
+
      }
 
 
      if (Phaser.Math.chanceRoll(50)){
-     /*creo altri due ripiani*/
+     /*creo altri due ripiani -questo è il secondo*/
       element = this.shelves.create(x+total+unit,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH,'platform');
       setCommonProperties(element);
-      total+=this.shelfW+unit;
+
+     if (Phaser.Math.chanceRoll(35)){
+       element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH-this.fruitH-10,'morablack');
+       element.anchor.setTo(0.5,0.5);
+       setCommonProperties(element);
      }
 
+      if (Phaser.Math.chanceRoll(20)){
+       element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.solidH-this.fruitH-10,'morared');
+       element.anchor.setTo(0.5,0.5);
+       setCommonProperties(element);
+      }
+
+      total+=this.shelfW+unit;
+     }
 
      if (Phaser.Math.chanceRoll(50)){
        element = this.cactuses.create(x+total+unit,game.world.height-this.solidH-this.cactusH,'cactus');
        setCommonProperties(element);
        total+=this.cactusW+unit;
      }
+
+    total+=unit*10;
+    
+     if(!this.lectshape){
+        var xLecter = game.camera.x+w;
+        var yLecter = game.world.height-this.solidH-this.lectH;
+
+        this.lectshape = new Shape(0,0,this.lectW,this.lectH,'null');
+        this.lectshape.setPosition('top-left');
+        this.lectshape.setLecter(this.text[this.choseText].charAt(parseInt(Math.random()*100%this.text[this.choseText].length)));
+        this.lectshape.setTextSize(100);
+        this.lectshape.initializeBitmapData();
+    }
+
+  
+   if (Phaser.Math.chanceRoll(80)){
+    element = this.lects.create(x+total,game.world.height-this.solidH-this.lectH-this.lectH/2,this.lectshape.bmd);
+    setCommonProperties(element);
+   }
+
+    total+=unit*10;
 
     return total;
   }
@@ -480,26 +544,7 @@
     }
 
     GameState.prototype.matchDiamond=function(){
-        /*this.diamonds.getFirstAlive().kill();
-        if(this.symbols.countLiving()==0){
-         this.symbol = this.symbols.create(10,500, 'diamond');
-         this.symbol.fixedToCamera = true;  
-        }else if(this.symbols.countLiving()==1){
-         this.symbols.getFirstAlive().kill();
-         this.symbol = this.symbols.create(10,500, 'diamond');
-         this.symbol.fixedToCamera = true; 
-         this.symbol = this.symbols.create(10,570, 'diamond');
-         this.symbol.fixedToCamera = true; 
-        }else if(this.symbols.countLiving()==2){
-         this.symbols.getFirstAlive().kill();
-         this.symbols.getFirstAlive().kill();
-         this.symbol = this.symbols.create(10,500, 'diamond');
-         this.symbol.fixedToCamera = true; 
-         this.symbol = this.symbols.create(10,570, 'diamond');
-         this.symbol.fixedToCamera = true; 
-         this.symbol = this.symbols.create(10,630, 'diamond');
-         this.symbol.fixedToCamera = true; 
-        }*/
+
     }
     
     GameState.prototype.matchEnemy=function(){
@@ -530,6 +575,10 @@
      this.cactuses.getFirstAlive().kill();
     }
      
+    GameState.prototype.matchFruit=function(player,fruit){
+      fruit.kill();
+     //this.player.animations.play('superman');
+    }
    
     GameState.prototype.matchMedical=function(){
         this.medicals.getFirstAlive().kill();
@@ -680,8 +729,9 @@
         }
     }
 
+    /*tra 100 e 250*/
     function onSwipeUp() {
-            return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
+            return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 400);
     }
 
     function onSwipeRight() {
@@ -706,6 +756,8 @@
         game.load.image('tree', 'assets/tree.png');
         game.load.image('tree2', 'assets/tree2.png');
         game.load.image('tree3', 'assets/tree3.png');
+        game.load.image('morared', 'assets/morared.png');
+        game.load.image('morablack', 'assets/morablack.png');
         
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
         game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
@@ -729,8 +781,6 @@
     this.platforms = game.add.group();                                                     
     this.platforms.enableBody = true;
 
-    this.enemies = game.add.group();
-    this.enemies.enableBody = true;  
 
     this.stars = game.add.group();                                                          //creaiamo il gruppo stars
     this.stars.enableBody = true;                                                           //abilitiamo tutte le stelle che sono state create in questo gruppo
@@ -769,6 +819,12 @@
 
     this.cilieges=game.add.group();
     this.cilieges.enableBody = true;
+
+    this.fruits=game.add.group();
+    this.fruits.enableBody = true;
+
+    this.enemies = game.add.group();
+    this.enemies.enableBody = true;  
 
     this.textGroup=game.add.group();
                                                      
@@ -846,7 +902,8 @@
   GameState.prototype.configureAnimationElement=function(){
        this.player.animations.add('ice', [3,4,5], 10, true);                             
        this.player.animations.add('right', [0,1,2], 10, true);
-       this.player.animations.add('cloud', [6], 10, true);     
+       this.player.animations.add('cloud', [6], 10, true);
+       this.player.animations.add('superman', [7,8,9], 10, true);      
 
        this.enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   
        this.enemies.callAll('animations.add', 'animations', 'right', [0], 10, true);
