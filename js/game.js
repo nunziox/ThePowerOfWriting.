@@ -599,35 +599,35 @@
         if(this.stars.countLiving()>0){
             var posStarX = this.stars.getFirstAlive().x;
             if (game.camera.x > posStarX+this.starW) {
-                this.stars.getFirstAlive().kill();
+                this.stars.getFirstAlive().destroy();
             }
         }
 
         if(this.shelves.countLiving()>0){
             var posPlatformX = this.shelves.getFirstAlive().x;
             if (game.camera.x > posPlatformX+this.platformW) {
-                this.shelves.getFirstAlive().kill();
+                this.shelves.getFirstAlive().destroy();
             }
         }
 
        if(this.enemies.countLiving()>0){
             var posEnemyX = this.enemies.getFirstAlive().x;
             if (game.camera.x > posEnemyX+this.enemyW) {
-                this.enemies.getFirstAlive().kill();
+                this.enemies.getFirstAlive().destroy();
             }
         }
 
         if(this.explosions.countLiving()>0){
             var posBoomX = this.explosions.getFirstAlive().x;
             if (game.camera.x > posBoomX) {
-                this.explosions.getFirstAlive().kill();
+                this.explosions.getFirstAlive().destroy();
             }
         }
 
         if(this.cactuses.countLiving()>0){
             var posBoomX = this.cactuses.getFirstAlive().x;
             if (game.camera.x > posBoomX) {
-                this.cactuses.getFirstAlive().kill();
+                this.cactuses.getFirstAlive().destroy();
             }
         }
 
@@ -635,42 +635,42 @@
         if(this.medicals.countLiving()>0){
             var posBoomX = this.medicals.getFirstAlive().x;
             if (game.camera.x > posBoomX) {
-                this.medicals.getFirstAlive().kill();
+                this.medicals.getFirstAlive().destroy();
             }
         }
 
         if(this.diamonds.countLiving()>0){
             var posBoomX = this.diamonds.getFirstAlive().x;
             if (game.camera.x > posBoomX) {
-                this.diamonds.getFirstAlive().kill();
+                this.diamonds.getFirstAlive().destroy();
             }
         }
 
         if(this.clouds.countLiving()>0){
             var posBoomX = this.clouds.getFirstAlive().x;
             if (game.camera.x > posBoomX+this.cloudW) {
-                this.clouds.getFirstAlive().kill();
+                this.clouds.getFirstAlive().destroy();
             }
         }
 
        if(this.bananas.countLiving()>0){
             var posBoomX = this.bananas.getFirstAlive().x;
             if (game.camera.x > posBoomX+this.bananaW) {
-                this.bananas.getFirstAlive().kill();
+                this.bananas.getFirstAlive().destroy();
             }
         }        
 
         if(this.cilieges.countLiving()>0){
             var posBoomX = this.cilieges.getFirstAlive().x;
             if (game.camera.x > posBoomX+this.ciliegeW) {
-                this.cilieges.getFirstAlive().kill();
+                this.cilieges.getFirstAlive().destroy();
             }
         }  
 
         if(this.trees.countLiving()>0){
             var posBoomX = this.trees.getFirstAlive().x;
             if (game.camera.x > posBoomX+this.treeW) {
-                this.trees.getFirstAlive().kill();
+                this.trees.getFirstAlive().destroy();
             }
         } 
 
