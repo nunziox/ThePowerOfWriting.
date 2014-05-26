@@ -71,7 +71,9 @@
 
     this.text=[];
     this.choseText=0;
-    this.textGroup=0;
+    this.textGroup = 0;
+
+    this.posCreate = 0;
  }
 
 
@@ -125,17 +127,18 @@
          
         
         if(game.camera.x+w>this.busy_fruit_space){
-          this.busy_fruit_space=this.createElementInMap(game.camera.x+w,rand%40,rand%25,rand%10);
-          this.busy_fruit_space+=game.camera.x+w;
+          this.busy_fruit_space=this.createElementInMap(game.camera.x+w+150,rand%40,rand%25,rand%10);
+          this.busy_fruit_space += game.camera.x + w;
+          this.posCreate = game.camera.x;
         }
 
-        if(game.camera.x+w>this.busy_cloud_space){
-           this.busy_cloud_space=this.createCloudInMap(game.camera.x+w);
+        if(game.camera.x+w>this.busy_cloud_space && game.camera.x-this.posCreate>=70){
+           this.busy_cloud_space=this.createCloudInMap(game.camera.x+w+150);
            this.busy_cloud_space+=game.camera.x+w;
         }
 
-        if(game.camera.x+w>this.busy_tree_space){
-           this.busy_tree_space=this.createTreeInMap(game.camera.x+w);
+        if (game.camera.x + w > this.busy_tree_space && game.camera.x - this.posCreate >= 140) {
+           this.busy_tree_space=this.createTreeInMap(game.camera.x+w+150);
            this.busy_tree_space+=game.camera.x+w;
         }
 
