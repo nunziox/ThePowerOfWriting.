@@ -886,9 +886,16 @@
 
     this.textGroup=game.add.group();
     this.sentenceText=[];
-    this.choseText=parseInt((Math.random()*100)%(this.text.length));
-    for(var i=0;i<this.text[this.choseText].length;i++){
-        this.sentenceText[i]=game.make.text(w - 50,60+i*35, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF',stroke: "black", strokeThickness:1,align:'center'});
+    this.choseText = parseInt((Math.random() * 100) % (this.text.length));
+    var posx = 0;
+    var width = 0;
+    for (var i = 0; i < this.text[this.choseText].length; i++) {
+        if(posx == 0)
+            this.sentenceText[i] = game.make.text(w / 2 - this.text[this.choseText].length * 30 / 2, 10, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 1, align: 'left' });
+        else
+            this.sentenceText[i] = game.make.text(posx + width, 10, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 1, align: 'left' });
+        posx = this.sentenceText[i].x;
+        width = this.sentenceText[i].width;
         this.sentenceText[i].fixedToCamera = true;
         this.textGroup.add(this.sentenceText[i]);
     }
