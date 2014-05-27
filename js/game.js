@@ -20,6 +20,7 @@
     this.cilieges=0,this.ciliege=0;
     this.trees=0,this.tree=0;
     this.fruits=0,this.fruit=0;
+    this.blackbarries=0,this.blackbarry=0;
 
    /*size of all elements*/
     this.starH=60,this.starW=60;
@@ -39,9 +40,12 @@
     this.ciliegeH=60,this.ciliegeW=60;
     this.treeW=296,this.treeH=566;
     this.fruitW=60,this.fruitH=60;
+    this.lifeW=80,this.lifeH=50;
+    this.blackbarryW=60,this.blackbarryH=60;
 
     /*x velocity elements*/
     this.playerV=180;
+    this.enemyV=60;
 
     /*state variable*/
     this.turn = 0;                                                               
@@ -50,12 +54,15 @@
     this.busy_fruit_space=0;
     this.busy_cloud_space=0;
     this.busy_tree_space=0;
+    this.button_pausa=0;
+    this.upcount=0;
 
     this.DINO = {
         NORMAL:{value: 0}, 
         SUPERBLU:{value: 1},
         STOPPED:{value:2},
-        WRITER:{value:3}
+        WRITER:{value:3},
+        SUPERMAN:{value:3}
     };
 
     this.shape=0;
@@ -95,10 +102,13 @@
         this.initializeElementParameter();
 
 
+        game.input.onDown.add(this.unpause, self);
+
     ;},
 
 
    update : function(){
+        this.button_pausa.setFrames(0,0,0);
         this.updateSpeed();
         game.physics.arcade.collide(this.player,this.platforms); 
         game.physics.arcade.collide(this.player,this.shelves); 
@@ -114,6 +124,7 @@
         game.physics.arcade.overlap(this.player, this.bananas,this.matchBanana, null, this);
         game.physics.arcade.overlap(this.player, this.cilieges,this.matchCiliege, null, this);
         game.physics.arcade.overlap(this.player, this.fruits,this.matchFruit, null, this);
+        game.physics.arcade.overlap(this.player, this.fruits,this.matchBlackBarries, null, this);
 
         if(this.medicals.countLiving()>0){
          game.physics.arcade.overlap(this.medicals.getFirstAlive(),this.player, this.matchMedical, null, this);
@@ -121,8 +132,7 @@
 
  
         var rand=Math.random()*100;
-        //this.createRandomElementInMap(game.camera.x+w,game.world.height-this.enemyH-this.solidH,this.enemies,30,1500,'enemy',1,0,0,0,true,true);
-         
+       
         
         if(game.camera.x+w>this.busy_fruit_space){
           this.busy_fruit_space=this.createElementInMap(game.camera.x+w,rand%40,rand%25,rand%10);
@@ -139,8 +149,6 @@
            this.busy_tree_space+=game.camera.x+w;
         }
 
-
-
         if(this.lects.countLiving()>0){
             this.lects.getFirstAlive().anchor.setTo(0.5,0.5);
             this.lects.getFirstAlive().angle+=2;
@@ -149,13 +157,15 @@
         for(var i=0;i<this.fruits.countLiving();i++){
          this.fruits.getAt(i).angle+=1;
         }
-    
 
+        for(var i=0;i<this.blackbarries.countLiving();i++){
+         this.blackbarries.getAt(i).angle+=1;
+        }
+    
         if (game.input.activePointer.isDown) {
            
                 var x = game.input.activePointer.position.x;
                 var y = game.input.activePointer.position.y;
-             
 
                 if ((x >= (this.reservedArea.area[0].x - game.camera.x) && x <= (this.reservedArea.area[0].x_ - game.camera.x)) && (y >= this.reservedArea.area[0].y && y <= this.reservedArea.area[0].y_)) {
                     this.turn = this.shape.captureInputData();
@@ -166,7 +176,7 @@
    
    
         var tmp=updateTimer();
-        if(tmp>=(this.start_time+9)&&tmp<=(this.start_time+10)){
+        if(tmp>=(this.start_time+15)){
             this.player.animations.play('right');
             this.dino_state=this.DINO.NORMAL;
             this.player.body.velocity.x=this.playerV;
@@ -175,27 +185,36 @@
         }
 
 
-        if(this.dino_state==this.DINO.CLOUD){
+        /*if(this.dino_state==this.DINO.CLOUD){
             this.player.body.position.y=h/2-this.playerH-this.shelfH;
-            this.player.body.velocity.x=this.playerV*3;
-        }
+            this.player.body.velocity.x=this.playerV*2;
+        }*/
 
         if (onSwipeUp() && this.player.body.touching.down) {
-            if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU){
-             this.player.body.velocity.y = -700;
+            if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU||this.dino_state==this.DINO.SUPERMAN){
+             this.player.body.velocity.y = -700;   
              this.player.body.velocity.x=this.playerV;
             }
         }
 
+
         if (onSwipeRight()) {                                                      //Controllo se l'utente fa uno Swap a destra
             if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU){
-                this.player.body.velocity.x = this.playerV;                                          //Muovi a destra
-                this.player.animations.play('right');
+                this.player.body.velocity.x = this.playerV;   
+                if(this.dino_state==this.DINO.NORMAL){                                       
+                 this.player.animations.play('right');
+                }else if(this.dino_state==this.DINO.SUPERMAN){
+                  this.player.animations.play('superman');
+                }
             }
         }
-
+ 
+  
         if (game.input.activePointer.isUp) {
-                 
+            
+            var x = game.input.activePointer.position.x;
+            var y = game.input.activePointer.position.y;
+
            if(this.gturn==1){
 
              if(this.dino_state!=this.DINO.WRITER){
@@ -205,43 +224,45 @@
                 
                         } 
                     }else if(res.type=='circle'){
-                        if(this.symbols.countLiving()>0){
-                            this.player.animations.play('ice');
-                            this.start_time=updateTimer();
-                            this.dino_state=this.DINO.SUPERBLU;
-                            this.symbols.getFirstAlive().kill();
-                        }
+                        element = this.stars.create(x+game.camera.x,y,'banana');
+                        setCommonProperties(element);
                     }else if(res.type=='rectangle'){
-                        if(this.symbols.countLiving()>0){
-                            this.player.animations.play('cloud');
-                            this.start_time=updateTimer();
-                            this.dino_state=this.DINO.CLOUD;
-                            this.symbols.getFirstAlive().kill();
-                            this.player.body.velocity.x=2*this.playerV;
-                            this.player.body.collideWorldBounds=false;
-                            this.player.body.position.y=h/2-this.playerH;
-                            
-                            if(this.enemies.countLiving>0){
-                                this.enemies.getFirstAlive().kill();
-                            }
+                        element = this.stars.create(x+game.camera.x,y,'apple');
+                        setCommonProperties(element);
+                    }else if(res.type=='triangle'){
+                        element = this.stars.create(x+game.camera.x,y,'ciliege');
+                        setCommonProperties(element);
                     }
-                }
             }else{
                  if(this.shape){
-                  var ris=this.shape.checkInputData();
-                    if(ris.type==this.lectshape.lecter&&ris.point>4){
-                        
-                        this.colorSentenceLecter(this.shape.lecter);
-                        var tmp=this.countRedWord(this.text[this.choseText].length);
-                        if(tmp==this.text[this.choseText].length){
-                           this.generateText();
-                        }
-                        this.lecters.getFirstAlive().kill();
-                        this.setDinoNormal();
-                        this.lectshape=0;
+
+                   //if(this.shape._strokes[0].length>10)
+                   var ris=this.shape.checkInputData();
+
+
+                    if(ris.type==this.lectshape.lecter&&ris.point>2){                      
+                        this.colorSentenceLecter(this.shape.lecter);           
                     }else{
                         this.shape.clearInputData();
                     }
+
+                    this.lecters.getFirstAlive().kill();
+
+                    var tmp=this.countRedWord(this.text[this.choseText].length);
+                    if(tmp==this.text[this.choseText].length){
+                       this.generateText();
+                    }
+
+                    if(this.player.frame ==0){
+                      this.setDinoNormal();
+                    }else if(this.player.frame ==3){
+                          
+                    }else if(this.player.frame ==7){
+                      this.setDinoSuperMan();
+                    }
+
+                    this.lectshape=0;
+
                  }
            }
 
@@ -266,6 +287,12 @@
     ;}
 }
   
+  GameState.prototype.unpause=function(event){
+     if(game.paused){
+      game.paused=false;
+     }
+  }
+
   function setCommonProperties(element){
       element.body.gravity.y = 0; 
       element.body.immovable = true; 
@@ -349,7 +376,7 @@
      /*creo bombe*/
     if (Phaser.Math.chanceRoll(60)){
      element = this.enemies.create(x+total+unit,game.world.height-this.solidH-this.enemyH,'enemy');          
-     element.body.velocity.x = -60;
+     element.body.velocity.x = -this.enemyV;
      element.frame = 1;
      setCommonProperties(element);
     }
@@ -414,7 +441,7 @@
       }
 
       if (Phaser.Math.chanceRoll(20)){
-       element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.solidH-this.fruitH-10,'morablack');
+       element = this.blackbarries.create(x+total+unit+this.platformW/2,game.world.height-this.solidH-this.fruitH-10,'morablack');
        element.anchor.setTo(0.5,0.5);
        setCommonProperties(element);
       }
@@ -430,12 +457,12 @@
       setCommonProperties(element);
 
      if (Phaser.Math.chanceRoll(35)){
-       element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH-this.fruitH-10,'morablack');
+       element = this.blackbarries.create(x+total+unit+this.platformW/2,game.world.height-this.playerH-this.solidH-this.platformH-(2/3)*this.platformH-this.fruitH-10,'morablack');
        element.anchor.setTo(0.5,0.5);
        setCommonProperties(element);
      }
 
-      if (Phaser.Math.chanceRoll(20)){
+      if (Phaser.Math.chanceRoll(100)){
        element = this.fruits.create(x+total+unit+this.platformW/2,game.world.height-this.solidH-this.fruitH-10,'morared');
        element.anchor.setTo(0.5,0.5);
        setCommonProperties(element);
@@ -451,7 +478,7 @@
      }
 
     total+=unit*10;
-    
+
      if(!this.lectshape){
         var xLecter = game.camera.x+w;
         var yLecter = game.world.height-this.solidH-this.lectH;
@@ -519,6 +546,7 @@
                 this.player.kill();
                 this.audio_game.stop('audio_game');
                 this.effect_sound.play('game_over');
+                this.game.world.removeAll();
                 this.game.state.start('BootState');
             }
         }          
@@ -577,21 +605,22 @@
      
     GameState.prototype.matchFruit=function(player,fruit){
       fruit.kill();
-     //this.player.animations.play('superman');
+      this.player.animations.play('superman');
+      this.dino_state=this.DINO.SUPERMAN;
     }
    
     GameState.prototype.matchMedical=function(){
         this.medicals.getFirstAlive().kill();
         if(this.lives.countLiving()==1){
             this.lives.getFirstAlive().kill();
-            this.life = this.lives.create(w - 123, 16, 'life');
-            this.life = this.lives.create(w - 70, 16, 'life');
+            this.life = this.lives.create(w - 2*this.lifeW-85, 20, 'life');
+            this.life = this.lives.create(w - this.lifeW-85, 20, 'life');
         }else if(this.lives.countLiving()==2){
             this.lives.getFirstAlive().kill();
-            this.lives.getFirstAlive().kill();
-            this.life = this.lives.create(w - 176, 16, 'life');
-            this.life = this.lives.create(w - 123, 16, 'life');
-            this.life = this.lives.create(w - 70, 16, 'life');
+            this.lives.getFirstAlive().kill();           
+            this.life = this.lives.create(w - 3*this.lifeW-85, 20, 'life');
+            this.life = this.lives.create(w - 2*this.lifeW-85, 20, 'life');
+            this.life = this.lives.create(w - this.lifeW-85, 20, 'life');
         }
     }
 
@@ -672,7 +701,21 @@
             if (game.camera.x > posBoomX+this.treeW) {
                 this.trees.getFirstAlive().kill();
             }
-        } 
+        }
+
+         if(this.lects.countLiving()>0){
+            var posBoomX = this.lects.getFirstAlive().x;
+            if (game.camera.x > posBoomX+this.lectW) {
+                this.lects.getFirstAlive().kill();
+            }
+        }
+
+        if(this.blackbarries.countLiving()>0){
+            var posBoomX = this.blackbarries.getFirstAlive().x;
+            if (game.camera.x > posBoomX+this.blackbarryW) {
+                this.blackbarries.getFirstAlive().kill();
+            }
+        }    
 
     }
 
@@ -687,10 +730,27 @@
         this.dino_state=this.DINO.NORMAL;
     }
 
+    GameState.prototype.setDinoSuperMan=function(){
+        this.player.animations.play('superman');
+        this.player.body.velocity.x=this.playerV;
+        this.dino_state=this.DINO.SUPERMAN;
+    }
+
+ 
+
     GameState.prototype.setDinoWriter=function(){
-        this.player.animations.stop();
-        this.player.body.velocity.x=0;
-        this.dino_state=this.DINO.WRITER;
+       this.player.animations.stop();
+
+       if(this.dino_state==this.DINO.NORMAL){
+          this.player.frame = 0;
+       }else if(this.dino_state==this.DINO.SUPERBLU){
+          this.player.frame = 3;
+       }else if(this.dino_state==this.DINO.SUPERMAN){
+         this.player.frame = 7;
+       }
+        
+       this.player.body.velocity.x=0;
+       this.dino_state=this.DINO.WRITER;
     }
 
     GameState.prototype.setDinoStopped=function(){
@@ -725,7 +785,11 @@
 
      GameState.prototype.updateSpeed=function(){
         if(updateTimer()%10==0){
-            this.playerV+=1/3;
+           if(this.dino_state==this.DINO.NORMAL){
+            if(this.playerV<450){
+             this.playerV+=1/3;
+            }
+          }
         }
     }
 
@@ -733,6 +797,11 @@
     function onSwipeUp() {
             return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 400);
     }
+
+    function onSwipeDown() {
+            return ((game.input.activePointer.position.y-game.input.activePointer.positionDown.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 400);
+    }
+
 
     function onSwipeRight() {
             return ((game.input.activePointer.position.x - game.input.activePointer.positionDown.x) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
@@ -745,7 +814,7 @@
         game.load.image('apple', 'assets/fruit.png');
         game.load.image('fumetto', 'assets/fumetto.jpg');
         game.load.image('bullet', 'assets/bullet.png');
-        game.load.image('life', 'assets/life.png');
+        game.load.image('life', 'assets/newlife.png');
         game.load.image('cactus', 'assets/cactus.png');
         game.load.image('platform', 'assets/platform.png');
         game.load.image('platform', 'assets/platform.png');
@@ -758,10 +827,12 @@
         game.load.image('tree3', 'assets/tree3.png');
         game.load.image('morared', 'assets/morared.png');
         game.load.image('morablack', 'assets/morablack.png');
-        
+
+
+        game.load.spritesheet('playstop', 'assets/stop.png',60,60);
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
         game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
-        game.load.spritesheet('dude', 'assets/playerbolla.png', this.playerW, this.playerH);
+        game.load.spritesheet('dude', 'assets/playerbolla.png', this.playerW, this.playerH,10);
 
         game.load.audio('audio_game', 'assets/audio_game.mp3');
         game.load.audio('effect_sound', 'assets/effect_sound.mp3');
@@ -790,9 +861,7 @@
 
     this.lecters = game.add.group();
     this.lecters.enableBody = true;
-
-
-    
+  
     this.lives = game.add.group();
     this.lives.fixedToCamera = true;
 
@@ -824,10 +893,19 @@
     this.fruits.enableBody = true;
 
     this.enemies = game.add.group();
-    this.enemies.enableBody = true;  
+    this.enemies.enableBody = true;
+
+    this.blackbarries=game.add.group();
+    this.blackbarries.enableBody=true;    
 
     this.textGroup=game.add.group();
                                                      
+  }
+
+  
+  GameState.prototype.pausaGame=function(){
+      this.button_pausa.setFrames(1,1,1);
+      game.paused=true;  
   }
 
   GameState.prototype.createStaticElement=function(){
@@ -840,13 +918,18 @@
 
 
        this.player = game.add.sprite(0, game.world.height- this.solidH-this.playerH, 'dude');
- 
+  
+       var element;
 
-       this.life = this.lives.create(w - 176, 16, 'life');
-       this.life = this.lives.create(w - 123, 16, 'life');
-       this.life = this.lives.create(w - 70, 16, 'life');
 
-       var element=game.add.sprite(10, 16,'apple');
+        this.button_pausa=game.add.button(w-80,16, 'playstop', this.pausaGame, this, 0,0,0);
+        this.button_pausa.fixedToCamera=true;
+
+        this.life = this.lives.create(w - 3*this.lifeW-85, 20, 'life');
+        this.life = this.lives.create(w - 2*this.lifeW-85, 20, 'life');
+        this.life = this.lives.create(w - this.lifeW-85, 20, 'life');
+
+       element=game.add.sprite(10, 16,'apple');
        element.fixedToCamera=true;
        element=game.add.sprite(10, 80,'banana');
        element.fixedToCamera=true;
@@ -885,7 +968,7 @@
     this.sentenceText=[];
     this.choseText=parseInt((Math.random()*100)%(this.text.length));
     for(var i=0;i<this.text[this.choseText].length;i++){
-        this.sentenceText[i]=game.make.text(w - 50,60+i*35, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF',stroke: "black", strokeThickness:1,align:'center'});
+        this.sentenceText[i]=game.make.text(w - 65,75+i*35, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF',stroke: "black", strokeThickness:1,align:'center'});
         this.sentenceText[i].fixedToCamera = true;
         this.textGroup.add(this.sentenceText[i]);
     }
