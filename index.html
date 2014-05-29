@@ -1,22 +1,40 @@
 <html>
 
  <head>
-  <title>DINO WRITER</title>
-  <link rel="stylesheet" href="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.css">
-  <script src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
-  <script src="http://code.jquery.com/mobile/1.4.2/jquery.mobile-1.4.2.min.js"></script>
+     <title>Game</title>
+     <script type="text/javascript" src="js/phaser.min.js"></script>
+     <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+     <script type="text/javascript" src="js/ndollar.js"></script>
+     <script type="text/javascript" src="js/dollar.js"></script>
+     <script src="js/shapeN.js"></script>
+     <script src="js/gesture.js"></script>
  </head>
 
  <body>
-  <div data-role="fieldcontain">
-    <label for="name">User:</label>
-    <input type="text" name="txtuser" id="txtuser" value=""  />
-  </div>
-   <div data-role="fieldcontain">
-    <label for="password">Password Input:</label>
-    <input type="password" name="txtpassword" id="txtpassword" value="" />
-   </div>
-   <input type="button" data-theme="b" name="submit" id="submit" value="Submit">
- </body>
+      <script>
 
-</html>
+      var w = 1280;
+			var h = 800;
+			var game = new Phaser.Game(w,h, Phaser.AUTO, 'game', {create: gameDefinitions});
+
+			var BootState = function(game) {  };
+      var MenuState = function(game) {  };    
+ 			var GameState = function(game) {  };
+      var OverState = function(game) {  };    
+
+			function gameDefinitions() {
+ 				game.state.add('BootState', BootState);
+ 				game.state.add('GameState' , GameState);
+        game.state.add('MenuState' , MenuState);
+        game.state.add('OverState' , OverState);
+ 				game.state.start('BootState');
+			}
+
+      </script>
+     <script src="js/boot.js"></script>
+     <script src="js/menu.js"></script>
+     <script src="js/game.js"></script>
+     <script src="js/over.js"></script>  
+  </body>
+
+ </html>	

@@ -1,0 +1,31 @@
+<html>
+	<head>
+		 <script type="text/javascript" src="http://ajax.microsoft.com/ajax/jquery/jquery-1.5.min.js"></script>
+	</head>
+	<body>
+      <canvas id="Canvas1" width="600" height="600"></canvas>
+</canvas>
+		<script>
+     $(document).ready(function(){
+       var obj;
+       var req = new XMLHttpRequest();
+       req.open('GET', 'http://127.0.0.1/data.json', false); 
+       req.send(null);
+       if(req.status == 200){
+        obj=JSON.parse(req.responseText);
+       }
+
+       var canvas=document.getElementById('Canvas1');
+       var ctx=canvas.getContext('2d');
+
+       var el=JSON.parse(obj.JsonPoints);
+       
+       for(var i=0;i<el.length;i++){
+            ctx.fillStyle="#FF0000";
+            ctx.fillRect(el[i].X,el[i].Y,4,4);
+       }
+
+    });
+		</script>
+	</body>
+</html>
