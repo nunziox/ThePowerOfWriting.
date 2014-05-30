@@ -132,11 +132,9 @@
         game.physics.arcade.overlap(this.player, this.bananas,this.matchBanana, null, this);
         game.physics.arcade.overlap(this.player, this.cilieges,this.matchCiliege, null, this);
         game.physics.arcade.overlap(this.player, this.fruits,this.matchFruit, null, this);
-        game.physics.arcade.overlap(this.player, this.fruits,this.matchBlackBarries, null, this);
+        game.physics.arcade.overlap(this.player, this.blackbarries,this.matchBlackBarries, null, this);
 
-        if(this.medicals.countLiving()>0){
-         game.physics.arcade.overlap(this.medicals.getFirstAlive(),this.player, this.matchMedical, null, this);
-        }
+      
 
  
         var rand=Math.random()*100;
@@ -470,7 +468,7 @@
               }
 
               if (Phaser.Math.chanceRoll(20)) {
-                  element = this.fruits.create(x + total + unit + this.platformW / 2, game.world.height - this.solidH - this.fruitH - 10, 'morablack');
+                  element = this.blackbarries.create(x + total + unit + this.platformW / 2, game.world.height - this.solidH - this.fruitH - 10, 'morablack');
                   element.anchor.setTo(0.5, 0.5);
                   setCommonProperties(element);
               }
@@ -487,13 +485,13 @@
               element = this.shelves.create(x + total + unit, game.world.height - this.playerH - this.solidH - this.platformH - (2 / 3) * this.platformH, 'platform');
               setCommonProperties(element);
 
-              if (Phaser.Math.chanceRoll(35)) {
-                  element = this.fruits.create(x + total + unit + this.platformW / 2, game.world.height - this.playerH - this.solidH - this.platformH - (2 / 3) * this.platformH - this.fruitH - 10, 'morablack');
+              if (Phaser.Math.chanceRoll(100)) {
+                  element = this.blackbarries.create(x + total + unit + this.platformW / 2, game.world.height - this.playerH - this.solidH - this.platformH - (2 / 3) * this.platformH - this.fruitH - 10, 'morablack');
                   element.anchor.setTo(0.5, 0.5);
                   setCommonProperties(element);
               }
 
-              if (Phaser.Math.chanceRoll(20)) {
+              if (Phaser.Math.chanceRoll(35)) {
                   element = this.fruits.create(x + total + unit + this.platformW / 2, game.world.height - this.solidH - this.fruitH - 10, 'morared');
                   element.anchor.setTo(0.5, 0.5);
                   setCommonProperties(element);
@@ -516,7 +514,9 @@
 
               this.lectshape = new Shape(0, 0, this.lectW, this.lectH, 'null');
               this.lectshape.setPosition('top-left');
-              this.lectshape.setLecter(this.text[this.choseText].charAt(parseInt(Math.random() * 100 % this.text[this.choseText].length)));
+
+              //this.lectshape.setLecter(this.text[this.choseText].charAt(parseInt(Math.random() * 100 % this.text[this.choseText].length)));
+              this.lectshape.setLecter(this.text[this.choseText].charAt(this.firstNotRed(this.text[this.choseText].length)));
               this.lectshape.setTextSize(100);
               this.lectshape.initializeBitmapData();
           }
@@ -551,9 +551,10 @@
    
    GameState.prototype.colorSentenceLecter= function(lecter){
      for(var i=0;i<this.text[this.choseText].length;i++){
-      if(this.sentenceText[i].text==lecter){
+      if(this.sentenceText[i].text==lecter&&this.sentenceText[i].fill!='#FF0000'){
        this.sentenceText[i].fill='#FF0000';
        this.sentenceText[i].stroke='#FF0000';
+       break;
       }
      }
       return 0;
@@ -569,19 +570,26 @@
      return c;
    }
 
+   GameState.prototype.firstNotRed= function(len){
+     for(var i=0;i<len;i++){
+      if(this.sentenceText[i].fill!='#FF0000'){
+          return i;
+      }
+     }
+     return i;
+   }
+
    GameState.prototype.decreseLife= function(){
-        if(this.dino_state!=this.DINO.SUPERBLU){
-            if (this.lives.countLiving() > 1) {
-                this.lives.getFirstAlive().kill();
-            } else {
-                this.lives.getFirstAlive().kill();
-                this.player.kill();
-                this.audio_game.stop('audio_game');
-                this.effect_sound.play('game_over');
-                this.game.world.removeAll();
-                this.game.state.start('OverState');
-            }
-        }          
+        if(this.dino_state==this.DINO.SUPERMAN||this.dino_state==this.DINO.SUPERBLU){
+          this.setDinoNormal();
+        }else{
+         this.player.kill();
+         this.audio_game.stop('audio_game');
+         this.effect_sound.play('game_over');
+         this.game.world.removeAll();
+         this.game.state.start('OverState');
+         this.game.state.start('OverState');
+        }         
     }
 
  
@@ -643,6 +651,12 @@
       this.player.animations.play('superman');
       this.dino_state=this.DINO.SUPERMAN;
     }
+
+    GameState.prototype.matchBlackBarries=function(player,blackbarry){
+      blackbarry.kill();
+      this.player.animations.play('ice');
+      this.dino_state=this.DINO.SUPERBLU;
+    }
    
     GameState.prototype.matchMedical=function(){
         this.medicals.getFirstAlive().kill();
@@ -660,89 +674,26 @@
     }
 
     GameState.prototype.clearAll = function () {
-        if (this.stars.countLiving() > 0) {
-            var posStarX = this.stars.getFirstAlive().x;
-            if (game.camera.x > posStarX + this.starW) {
-                this.stars.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.shelves.countLiving() > 0) {
-            var posPlatformX = this.shelves.getFirstAlive().x;
-            if (game.camera.x > posPlatformX + this.platformW) {
-                this.shelves.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.enemies.countLiving() > 0) {
-            var posEnemyX = this.enemies.getFirstAlive().x;
-            if (game.camera.x > posEnemyX + this.enemyW) {
-                this.enemies.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.explosions.countLiving() > 0) {
-            var posBoomX = this.explosions.getFirstAlive().x;
-            if (game.camera.x > posBoomX) {
-                this.explosions.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.cactuses.countLiving() > 0) {
-            var posBoomX = this.cactuses.getFirstAlive().x;
-            if (game.camera.x > posBoomX) {
-                this.cactuses.getFirstAlive().destroy();
-            }
-        }
-
-
-        if (this.medicals.countLiving() > 0) {
-            var posBoomX = this.medicals.getFirstAlive().x;
-            if (game.camera.x > posBoomX) {
-                this.medicals.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.diamonds.countLiving() > 0) {
-            var posBoomX = this.diamonds.getFirstAlive().x;
-            if (game.camera.x > posBoomX) {
-                this.diamonds.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.clouds.countLiving() > 0) {
-            var posBoomX = this.clouds.getFirstAlive().x;
-            if (game.camera.x > posBoomX + this.cloudW) {
-                this.clouds.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.bananas.countLiving() > 0) {
-            var posBoomX = this.bananas.getFirstAlive().x;
-            if (game.camera.x > posBoomX + this.bananaW) {
-                this.bananas.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.cilieges.countLiving() > 0) {
-            var posBoomX = this.cilieges.getFirstAlive().x;
-            if (game.camera.x > posBoomX + this.ciliegeW) {
-                this.cilieges.getFirstAlive().destroy();
-            }
-        }
-
-        if (this.trees.countLiving() > 0) {
-            var posBoomX = this.trees.getFirstAlive().x;
-            if (game.camera.x > posBoomX + this.treeW) {
-                this.trees.getFirstAlive().destroy();
-            }
-        }
-
+        clear(this.stars,this.appleW);
+        clear(this.shelves,this.shelfW);
+        clear(this.enemies,this.enemyW);
+        clear(this.explosions,0);
+        clear(this.cactuses,this.cactusW);
+        clear(this.clouds,this.cloudW);
+        clear(this.bananas,this.bananaW);
+        clear(this.cilieges,this.ciliegeW);
+        clear(this.trees,this.treeW);
+        clear(this.lects,this.lectW);
+        clear(this.blackbarries,this.blackbarryW);
     }
 
-    function clear(group){
-     
-
+    function clear(group,dim){
+      if (group.countLiving() > 0) {
+          var pos = group.getFirstAlive().x;
+        if (game.camera.x > pos + dim) {
+          group.getFirstAlive().destroy();
+        }
+      }
     }
 
     GameState.prototype.setDinoNormal=function(){
@@ -946,9 +897,9 @@
         this.button_pausa=game.add.button(w-80,16, 'playstop', this.pausaGame, this, 0,0,0);
         this.button_pausa.fixedToCamera=true;
 
-        this.life = this.lives.create(w - 3*this.lifeW-85, 20, 'life');
+        /*this.life = this.lives.create(w - 3*this.lifeW-85, 20, 'life');
         this.life = this.lives.create(w - 2*this.lifeW-85, 20, 'life');
-        this.life = this.lives.create(w - this.lifeW-85, 20, 'life');
+        this.life = this.lives.create(w - this.lifeW-85, 20, 'life');*/
 
        element=game.add.sprite(10, 16,'apple');
        element.fixedToCamera=true;
