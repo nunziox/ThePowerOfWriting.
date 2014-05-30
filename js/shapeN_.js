@@ -71,6 +71,7 @@ Shape.prototype.clearInputData = function () {
 
 }
 
+
 Shape.prototype.initializeBitmapData = function () {
 
     this.bmd = game.add.bitmapData(this.bitmapW, this.bitmapH);
@@ -79,7 +80,6 @@ Shape.prototype.initializeBitmapData = function () {
     }
 
     this.bmd.context.fillStyle = '#BBBBBB';
-    this.bmd.context.lineWidth = 10;
 
     this._strokes = new Array();
     this._points = new Array();
@@ -95,67 +95,20 @@ Shape.prototype.initializeBitmapData = function () {
 }
 
 
-Shape.prototype.writeLecter = function () {
-    var thereis = false;
-    if (this.position === "center") {
-        var obj;
-        var req = new XMLHttpRequest();
-        req.open('GET', 'http://127.0.0.1/points.json', false);
-        req.send(null);
-        if (req.status === 200) {
-            obj = JSON.parse(req.responseText);
-        }
-        for (var k = 0; k < obj.length; k++) {
-            if (obj[k].Title === this.lecter) {
-                thereis = true;
-                var strokes = obj[k].Strokes;
-                this.bmd.context.beginPath();
-
-                var minX;
-                var minY;
-                var maxX;
-                var maxY;
-                for (var i = 0; i < strokes.length; i++) {
-                    var points = strokes[i].Points;
-                    for (var j = 0; j < points.length; j++) {
-                        if (i === 0 && j === 0) {
-                            minX = points[j].X;
-                            minY = points[j].Y;
-                            maxX = points[j].X;
-                            maxY = points[j].Y;;
-                        } else {
-                            if (minX > points[j].X) minX = points[j].X;
-                            if (minY > points[j].Y) minY = points[j].Y;
-                            if (maxX < points[j].X) maxX = points[j].X;
-                            if (maxY > points[j].Y) maxY = points[j].Y;
-                        }
-                    }
-                }
-
-                for (var i = 0; i < strokes.length; i++) {
-                    var points = strokes[i].Points;
-                    for (var j = 0; j < points.length ; j++) {
-                        if (j === 0) this.bmd.context.moveTo(points[j].X - minX + this.bitmapW / 2 - (maxX - minX) / 2, points[j].Y - minY + this.bitmapH / 2 - (maxY - minY) / 2);
-                        else this.bmd.context.lineTo(points[j].X - minX + this.bitmapW / 2 - (maxX - minX) / 2, points[j].Y - minY + this.bitmapH / 2 - (maxY - minY) / 2);
-                    }
-                    this.bmd.context.strokeStyle = '#ff0000';
-                    this.bmd.context.stroke();
-                }
-            }
-        }
-    }
-    if (!thereis) {
-        this.bmd.context.textBaseline = "top";
-        this.bmd.context.textAlign = 'center';
-        this.bmd.context.fillStyle = "Red";
-        this.bmd.context.font = "Bold " + this.textSize + "px" + " Verdana";
-        if (this.position == 'top-left') {
-            this.bmd.context.fillText(this.lecter, this.textSize / 3, -this.textSize / 5);
-        } else if (this.position == 'center') {
-            this.bmd.context.fillText(this.lecter, this.bitmapW / 2 + 5, this.bitmapH / 2 - 110);
-        }
+Shape.prototype.writeLecter=function(){
+    this.bmd.context.textBaseline = "top";
+    this.bmd.context.textAlign = 'center';
+    this.bmd.context.fillStyle = "Red";
+    this.bmd.context.font = "Bold "+this.textSize+"px"+ " Verdana";
+    if(this.position=='top-left'){
+     this.bmd.context.fillText(this.lecter, this.textSize/3,-this.textSize/5);
+    }else if(this.position=='center'){
+     this.bmd.context.fillText(this.lecter, this.bitmapW/2+5,this.bitmapH/2-110); 
     }
 }
+
+
+
 
 Shape.prototype.captureInputData = function () {
     

@@ -87,6 +87,7 @@
 
     this.posCreate = 0;
     this.nextStep = 0;
+
  }
 
 
@@ -245,14 +246,38 @@
                 
                         } 
                     }else if(res.type=='circle'){
+                      if(this.dino_state==this.DINO.SUPERMAN){
+                        element = this.stars.create(x+game.camera.x,y,'bananax5');
+                        setCommonProperties(element);
+                      }else if(this.dino_state==this.DINO.SUPERBLU){
+                        element = this.stars.create(x+game.camera.x,y,'bananax2');
+                        setCommonProperties(element);
+                      }else{
                         element = this.stars.create(x+game.camera.x,y,'banana');
                         setCommonProperties(element);
+                      }
                     }else if(res.type=='rectangle'){
+                       if(this.dino_state==this.DINO.SUPERMAN){
+                        element = this.stars.create(x+game.camera.x,y,'applex5');
+                        setCommonProperties(element);
+                      }else if(this.dino_state==this.DINO.SUPERBLU){
+                        element = this.stars.create(x+game.camera.x,y,'applex2');
+                        setCommonProperties(element);
+                      }else{
                         element = this.stars.create(x+game.camera.x,y,'apple');
                         setCommonProperties(element);
+                      }
                     }else if(res.type=='triangle'){
+                      if(this.dino_state==this.DINO.SUPERMAN){
+                        element = this.stars.create(x+game.camera.x,y,'ciliegex5');
+                        setCommonProperties(element);
+                      }else if(this.dino_state==this.DINO.SUPERBLU){
+                        element = this.stars.create(x+game.camera.x,y,'ciliegex2');
+                        setCommonProperties(element);
+                      }else{
                         element = this.stars.create(x+game.camera.x,y,'ciliege');
                         setCommonProperties(element);
+                      }
                     }
             }else{
                  if(this.shape){
@@ -267,7 +292,9 @@
                         this.shape.clearInputData();
                     }
 
-                    this.lecters.getFirstAlive().kill();
+                    if(this.lecters.countLiving()>0){
+                     this.lecters.getFirstAlive().kill();
+                    }
 
                     var tmp=this.countRedWord(this.text[this.choseText].length);
                     if(tmp==this.text[this.choseText].length){
@@ -278,7 +305,7 @@
                     if(this.player.frame ==0){
                       this.setDinoNormal();
                     }else if(this.player.frame ==3){
-                          
+                      this.setDinoIce();    
                     }else if(this.player.frame ==7){
                       this.setDinoSuperMan();
                     }
@@ -702,6 +729,12 @@
         this.dino_state=this.DINO.NORMAL;
     }
 
+    GameState.prototype.setDinoIce=function(){
+        this.player.animations.play('ice');
+        this.player.body.velocity.x=this.playerV;
+        this.dino_state=this.DINO.SUPERBLU;
+    }
+
     GameState.prototype.setDinoSuperMan=function(){
         this.player.animations.play('superman');
         this.player.body.velocity.x=this.playerV;
@@ -800,7 +833,14 @@
         game.load.image('morared', 'assets/morared.png');
         game.load.image('morablack', 'assets/morablack.png');
 
+        game.load.image('applex2', 'assets/fruitx2.png');
+        game.load.image('applex5', 'assets/fruitx5.png');
+        game.load.image('bananax2', 'assets/bananax2.png');
+        game.load.image('bananax5', 'assets/bananax5.png');
+        game.load.image('ciliegex2', 'assets/ciliegex2.png');
+        game.load.image('ciliegex5', 'assets/ciliegex5.png');
 
+        game.load.image('exitgame', 'assets/exitgame.png');
         game.load.spritesheet('playstop', 'assets/stop.png',60,60);
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
         game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
@@ -880,6 +920,10 @@
       game.paused=true;  
   }
 
+    GameState.prototype.exitGame=function(){
+      window.location="";
+  }
+
   GameState.prototype.createStaticElement=function(){
 
        this.gesture = new Gesture(0,0,w,h);
@@ -894,8 +938,11 @@
        var element;
 
 
-        this.button_pausa=game.add.button(w-80,16, 'playstop', this.pausaGame, this, 0,0,0);
-        this.button_pausa.fixedToCamera=true;
+       this.button_pausa=game.add.button(w-180,30, 'playstop', this.pausaGame, this, 0,0,0);
+       this.button_pausa.fixedToCamera=true;
+
+       element=game.add.button(w-100,16, 'exitgame', this.exitGame, this, 0,0,0);
+       element.fixedToCamera=true;
 
         /*this.life = this.lives.create(w - 3*this.lifeW-85, 20, 'life');
         this.life = this.lives.create(w - 2*this.lifeW-85, 20, 'life');

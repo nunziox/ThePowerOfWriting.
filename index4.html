@@ -9,20 +9,34 @@
      $(document).ready(function(){
        var obj;
        var req = new XMLHttpRequest();
-       req.open('GET', 'http://127.0.0.1/data.json', false); 
+       req.open('GET', 'http://127.0.0.1/points.json', false);
        req.send(null);
-       if(req.status == 200){
-        obj=JSON.parse(req.responseText);
+       if(req.status === 200){
+           obj = JSON.parse(req.responseText);
        }
 
        var canvas=document.getElementById('Canvas1');
-       var ctx=canvas.getContext('2d');
-
-       var el=JSON.parse(obj.JsonPoints);
-       
-       for(var i=0;i<el.length;i++){
-            ctx.fillStyle="#FF0000";
-            ctx.fillRect(el[i].X,el[i].Y,4,4);
+       var ctx = canvas.getContext('2d');
+       ctx.lineWidth = 4;
+         
+       for (var k = 0; k < obj.length; k++) {
+           var strokes = obj[k].Strokes;
+           alert(obj[k].Title);
+           ctx.beginPath();
+           for (var i = 0; i < strokes.length; i++) {
+               var points = strokes[i].Points;
+               for (var j = 0; j < points.length ; j++) {
+                   /*ctx.beginPath();
+                   ctx.fillStyle = "#FF0000";
+                   ctx.lineTo(points[j].X, points[j].Y);
+                   ctx.fillRect(points[j].X, points[j].Y, 4, 4);*/
+                   if (j === 0) ctx.moveTo(points[j].X, points[j].Y);
+                   else ctx.lineTo(points[j].X, points[j].Y);
+                   //ctx.lineTo(45, 125);
+               }
+            ctx.strokeStyle = '#ff0000';
+            ctx.stroke();
+           }
        }
 
     });
