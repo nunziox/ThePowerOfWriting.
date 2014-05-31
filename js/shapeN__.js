@@ -98,10 +98,17 @@ Shape.prototype.initializeBitmapData = function () {
 Shape.prototype.writeLecter = function () {
     var thereis = false;
     if (this.position === "center") {
-        for (var k = 0; k < JsonObj.length; k++) {
-            if (JsonObj[k].Title === this.lecter) {
+        var obj;
+        var req = new XMLHttpRequest();
+        req.open('GET', 'points.json', false);
+        req.send(null);
+        if (req.status === 200) {
+            obj = JSON.parse(req.responseText);
+        }
+        for (var k = 0; k < obj.length; k++) {
+            if (obj[k].Title === this.lecter) {
                 thereis = true;
-                var strokes = JsonObj[k].Strokes;
+                var strokes = obj[k].Strokes;
                 this.bmd.context.beginPath();
 
                 var minX;
@@ -120,7 +127,7 @@ Shape.prototype.writeLecter = function () {
                             if (minX > points[j].X) minX = points[j].X;
                             if (minY > points[j].Y) minY = points[j].Y;
                             if (maxX < points[j].X) maxX = points[j].X;
-                            if (maxY < points[j].Y) maxY = points[j].Y;
+                            if (maxY > points[j].Y) maxY = points[j].Y;
                         }
                     }
                 }

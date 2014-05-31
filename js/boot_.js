@@ -1,5 +1,3 @@
-var JsonObj;
-
 BootState.prototype = {
 
 
@@ -14,12 +12,6 @@ BootState.prototype = {
        this.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
        this.scale.setScreenSize(true);
        this.game.state.start('MenuState');
-       var req = new XMLHttpRequest();
-       req.open('GET', 'points.json', false);
-       req.send(null);
-       if (req.status === 200) {
-           JsonObj = JSON.parse(req.responseText);
-       }
     ;},
 
 
