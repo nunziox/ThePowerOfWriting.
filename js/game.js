@@ -26,6 +26,7 @@
     this.trees=0,this.tree=0;
     this.fruits=0,this.fruit=0;
     this.blackbarries=0,this.blackbarry=0;
+    this.bananasx2=0,this.bananasx5=0,this.ciliegex2=0,this.ciliegex5=0,this.applex2=0,this.applex5=0;
 
    /*size of all elements*/
     this.starH=60,this.starW=60;
@@ -94,6 +95,14 @@
  GameState.prototype = {
 
     preload : function(){
+
+    this.load.onFileComplete.add(function( progress ) { 
+          if(this.loading_status!=undefined){
+            this.loading_status.text = 'Loading:'+progress;
+          }else{          
+            this.loading_status=game.add.text(w/2-130, h/2-80, 'Loading:', { font: '59px Arial', fill: '#FFF' });      //stampo lo score attuale
+          }
+      });
       this.loadAllContent();
     ;},
 
@@ -136,6 +145,12 @@
         game.physics.arcade.overlap(this.player, this.blackbarries,this.matchBlackBarries, null, this);
 
       
+        game.physics.arcade.overlap(this.player, this.ciliegex2,this.matchCiliegeX2, null, this);
+        game.physics.arcade.overlap(this.player, this.ciliegex5,this.matchCiliegeX5, null, this);
+        game.physics.arcade.overlap(this.player, this.applex2,this.matchAppleX2, null, this);
+        game.physics.arcade.overlap(this.player, this.applex5,this.matchAppleX5, null, this);
+        game.physics.arcade.overlap(this.player, this.bananasx2,this.matchBananaX2, null, this);
+        game.physics.arcade.overlap(this.player, this.bananasx5,this.matchBananaX5, null, this);
 
  
         var rand=Math.random()*100;
@@ -247,21 +262,21 @@
                         } 
                     }else if(res.type=='circle'){
                       if(this.dino_state==this.DINO.SUPERMAN){
-                        element = this.stars.create(x+game.camera.x,y,'bananax5');
+                        element = this.bananasx5.create(x+game.camera.x,y,'bananax5');
                         setCommonProperties(element);
                       }else if(this.dino_state==this.DINO.SUPERBLU){
-                        element = this.stars.create(x+game.camera.x,y,'bananax2');
+                        element = this.bananasx2.create(x+game.camera.x,y,'bananax2');
                         setCommonProperties(element);
                       }else{
-                        element = this.stars.create(x+game.camera.x,y,'banana');
+                        element = this.bananas.create(x+game.camera.x,y,'banana');
                         setCommonProperties(element);
                       }
                     }else if(res.type=='rectangle'){
                        if(this.dino_state==this.DINO.SUPERMAN){
-                        element = this.stars.create(x+game.camera.x,y,'applex5');
+                        element = this.applex5.create(x+game.camera.x,y,'applex5');
                         setCommonProperties(element);
                       }else if(this.dino_state==this.DINO.SUPERBLU){
-                        element = this.stars.create(x+game.camera.x,y,'applex2');
+                        element = this.applex2.create(x+game.camera.x,y,'applex2');
                         setCommonProperties(element);
                       }else{
                         element = this.stars.create(x+game.camera.x,y,'apple');
@@ -269,13 +284,13 @@
                       }
                     }else if(res.type=='triangle'){
                       if(this.dino_state==this.DINO.SUPERMAN){
-                        element = this.stars.create(x+game.camera.x,y,'ciliegex5');
+                        element =  this.ciliegex5.create(x+game.camera.x,y,'ciliegex5');
                         setCommonProperties(element);
                       }else if(this.dino_state==this.DINO.SUPERBLU){
-                        element = this.stars.create(x+game.camera.x,y,'ciliegex2');
+                        element =  this.ciliegex2.create(x+game.camera.x,y,'ciliegex2');
                         setCommonProperties(element);
                       }else{
-                        element = this.stars.create(x+game.camera.x,y,'ciliege');
+                        element = this.cilieges.create(x+game.camera.x,y,'ciliege');
                         setCommonProperties(element);
                       }
                     }
@@ -641,6 +656,47 @@
       this.scoreTextCiliege.text = this.scoreCiliege;
     }
 
+    GameState.prototype.matchCiliegeX2=function(player,ciliege){
+      ciliege.kill();
+      this.scoreCiliege += 2; 
+       scoreCiliege=this.scoreCiliege;
+      this.scoreTextCiliege.text = this.scoreCiliege;
+    }
+
+    GameState.prototype.matchCiliegeX5=function(player,ciliege){
+      ciliege.kill();
+      this.scoreCiliege += 5;
+       scoreCiliege=this.scoreCiliege;
+      this.scoreTextCiliege.text = this.scoreCiliege;
+    }
+
+    GameState.prototype.matchAppleX2=function(player,apple){
+      apple.kill();
+      this.score+=2;
+      this.scoreText.text = this.score;         //inserisco un nuovo valore nella scritta
+      scoreApple=this.score;
+    }
+    GameState.prototype.matchAppleX5=function(player,apple){
+      apple.kill();
+      this.score+=5;
+      this.scoreText.text = this.score;         //inserisco un nuovo valore nella scritta
+      scoreApple=this.score;
+    }
+    GameState.prototype.matchBananaX2=function(player,banana){
+      banana.kill();
+      this.scoreBanana += 2;
+           scoreBanana=this.scoreBanana; 
+      this.scoreTextBanana.text = this.scoreBanana;
+    }
+     GameState.prototype.matchBananaX5=function(player,banana){
+       banana.kill();
+       this.scoreBanana += 5;
+            scoreBanana=this.scoreBanana; 
+      this.scoreTextBanana.text = this.scoreBanana;
+    }
+
+
+
     GameState.prototype.matchDiamond=function(){
 
     }
@@ -685,6 +741,9 @@
       this.dino_state=this.DINO.SUPERBLU;
     }
    
+
+
+
     GameState.prototype.matchMedical=function(){
         this.medicals.getFirstAlive().kill();
         if(this.lives.countLiving()==1){
@@ -911,6 +970,19 @@
     this.blackbarries.enableBody=true;    
 
     this.textGroup=game.add.group();
+
+     this.bananasx2=game.add.group();
+     this.bananasx2.enableBody = true;
+     this.bananasx5=game.add.group();
+     this.bananasx5.enableBody = true;
+     this.ciliegex2=game.add.group();
+     this.ciliegex2.enableBody = true;
+     this.ciliegex5=game.add.group();
+     this.ciliegex5.enableBody = true;
+     this.applex2=game.add.group();
+     this.applex2.enableBody = true;
+     this.applex5=game.add.group();
+     this.applex5.enableBody = true;
                                                      
   }
 

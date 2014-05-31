@@ -100,7 +100,7 @@ Shape.prototype.writeLecter = function () {
     if (this.position === "center") {
         var obj;
         var req = new XMLHttpRequest();
-        req.open('GET', 'http://127.0.0.1/points.json', false);
+        req.open('GET', 'points.json', false);
         req.send(null);
         if (req.status === 200) {
             obj = JSON.parse(req.responseText);
