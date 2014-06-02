@@ -21,12 +21,14 @@
       var MenuState = function(game) {  };    
  			var GameState = function(game) {  };
       var OverState = function(game) {  };    
+      var LessonState = function(game) {  };  
 
 			function gameDefinitions() {
  				game.state.add('BootState', BootState);
  				game.state.add('GameState' , GameState);
         game.state.add('MenuState' , MenuState);
         game.state.add('OverState' , OverState);
+        game.state.add('LessonState' , LessonState);
  				game.state.start('BootState');
 			}
 
@@ -35,6 +37,7 @@
      <script src="js/menu.js"></script>
      <script src="js/game.js"></script>
      <script src="js/over.js"></script>  
+     <script src="js/lesson.js"></script> 
   </body>
 
  </html>	

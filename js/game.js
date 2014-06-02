@@ -88,6 +88,8 @@
 
     this.posCreate = 0;
     this.nextStep = 0;
+    this.checkmarkbutton=0;
+    this.tutorial=true;
 
  }
 
@@ -108,7 +110,7 @@
 
 
     create:  function() {
-        
+
         game.physics.startSystem(Phaser.Physics.ARCADE);                                   
      
 
@@ -126,6 +128,7 @@
 
 
    update : function(){
+ 
         this.button_pausa.setFrames(0,0,0);
         this.updateSpeed();
         game.physics.arcade.collide(this.player,this.platforms); 
@@ -152,7 +155,7 @@
         game.physics.arcade.overlap(this.player, this.bananasx2,this.matchBananaX2, null, this);
         game.physics.arcade.overlap(this.player, this.bananasx5,this.matchBananaX5, null, this);
 
- 
+
         var rand=Math.random()*100;
        
         
@@ -295,44 +298,12 @@
                       }
                     }
             }else{
-                 if(this.shape){
-
-                   //if(this.shape._strokes[0].length>10)
-                   var ris=this.shape.checkInputData();
-
-
-                    if(ris.type==this.lectshape.lecter&&ris.point>2){                      
-                        this.colorSentenceLecter(this.shape.lecter);           
-                    }else{
-                        this.shape.clearInputData();
-                    }
-
-                    if(this.lecters.countLiving()>0){
-                     this.lecters.getFirstAlive().kill();
-                    }
-
-                    var tmp=this.countRedWord(this.text[this.choseText].length);
-                    if(tmp==this.text[this.choseText].length){
-                       this.generateText();
-                       scoreWord+=1;
-                    }
-
-                    if(this.player.frame ==0){
-                      this.setDinoNormal();
-                    }else if(this.player.frame ==3){
-                      this.setDinoIce();    
-                    }else if(this.player.frame ==7){
-                      this.setDinoSuperMan();
-                    }
-
-                    this.lectshape=0;
-
-                 }
+         
            }
 
-                    this.gturn=0;
-                    this.gesture.stroke=false;
-                    this.gesture.clearInputData();
+                
+                this.gesture.stroke=false;
+                this.gesture.clearInputData();
             }
 
             if (this.turn == 1) {
@@ -347,11 +318,12 @@
 
         this.background.position.x = -game.camera.x; //aggiorno la posizione del background
         this.clearAll();
+      
     
     ;},
 
     shutdown : function(){
-       
+       this.clearShutdown();
     ;}
 
 }
@@ -759,6 +731,61 @@
         }
     }
 
+
+   GameState.prototype.clearShutdown = function () {
+
+        /*destroy sound*/
+        this.audio_game.stop();
+        this.audio_game=null;
+        this.effect_sound.stop();
+        this.effect_sound=null;
+
+        /*destroy group*/
+        clearS(this.stars);
+        clearS(this.shelves);
+        clearS(this.enemies);
+        clearS(this.explosions);
+        clearS(this.cactuses);
+        clearS(this.clouds);
+        clearS(this.bananas);
+        clearS(this.cilieges);
+        clearS(this.trees);
+        clearS(this.lects);
+        clearS(this.blackbarries);
+        clearS(this.backgrounds);
+
+        this.background=0;
+        this.ground=0;
+
+        /*destroy object*/
+         this.shape=0;
+         this.lectshape=0;
+         this.gesture=0;
+
+        /*reinitialize variable*/
+        this.playerV=180;
+        this.enemyV=60;
+
+        /*destroy bitmaptext*/
+        this.score = 0,this.scoreText=0;
+        this.scoreBanana=0,this.scoreTextBanana=0;
+        this.scoreCiliege=0,this.scoreTextCiliege=0;
+        this.sentenceText={};
+        this.reservedArea = { area: [] };
+        this.dictionary = {};
+
+        this.player.destroy();      
+
+}
+
+    function clearS(group){
+      for(var i=0;i<group.countLiving();i++){
+          group.getAt(i).kill();
+          group.getAt(i).destroy();
+      }
+      group=null;
+    }
+
     GameState.prototype.clearAll = function () {
         clear(this.stars,this.appleW);
         clear(this.shelves,this.shelfW);
@@ -781,6 +808,8 @@
         }
       }
     }
+
+
 
     GameState.prototype.setDinoNormal=function(){
         this.player.animations.play('right');
@@ -840,6 +869,42 @@
         this.lecter=this.lecters.create(xLecter,yLecter,this.shape.bmd);
         this.reservedArea.area.splice(0,1);
         this.reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + this.bitmapW, "y_": yLecter + this.bitmapH, "posX": xLecter });
+        this.checkmarkbutton=game.add.button(xLecter-game.camera.x+this.bitmapW-60,yLecter+this.bitmapH-60,'checkmark',this.confirmShape, this, 0,0,0);
+        this.checkmarkbutton.fixedToCamera=true;
+    }
+
+    GameState.prototype.confirmShape=function() {
+              if(this.shape){
+                   //if(this.shape._strokes[0].length>10)
+                   var ris=this.shape.checkInputData();
+
+
+                    if(ris.type==this.lectshape.lecter&&ris.point>2){                      
+                        this.colorSentenceLecter(this.shape.lecter);           
+                    }else{
+                        this.shape.clearInputData();
+                    }
+
+                    if(this.lecters.countLiving()>0){
+                     this.lecters.getFirstAlive().kill();
+                    }
+
+                    var tmp=this.countRedWord(this.text[this.choseText].length);
+                    if(tmp==this.text[this.choseText].length){
+                       this.generateText();
+                       scoreWord+=1;
+                    }
+
+                    if(this.player.frame ==0){
+                      this.setDinoNormal();
+                    }else if(this.player.frame ==3){
+                      this.setDinoIce();    
+                    }else if(this.player.frame ==7){
+                      this.setDinoSuperMan();
+                    }
+                    this.lectshape=0;
+                    this.checkmarkbutton.kill();
+                 }
     }
 
     function updateTimer(){
@@ -872,7 +937,7 @@
     }
 
     GameState.prototype.loadAllContent=function(){
-        game.load.image('medical', 'assets/firstaid.png');
+        game.load.image('checkmark', 'assets/checkmark.png');
         game.load.image('forest', 'assets/bksprite.png');
         game.load.image('ground', 'assets/solid.jpg');
         game.load.image('apple', 'assets/fruit.png');
@@ -898,9 +963,11 @@
         game.load.image('bananax5', 'assets/bananax5.png');
         game.load.image('ciliegex2', 'assets/ciliegex2.png');
         game.load.image('ciliegex5', 'assets/ciliegex5.png');
+        game.load.image('samsungpen','assets/samsungpen.png');
 
         game.load.image('exitgame', 'assets/exitgame.png');
         game.load.spritesheet('playstop', 'assets/stop.png',60,60);
+
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
         game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
         game.load.spritesheet('dude', 'assets/playerbolla.png', this.playerW, this.playerH,10);
@@ -994,6 +1061,7 @@
 
     GameState.prototype.exitGame=function(){
       window.location="";
+      //this.game.state.start('BootState');
   }
 
   GameState.prototype.createStaticElement=function(){
