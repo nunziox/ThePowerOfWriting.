@@ -140,19 +140,15 @@ var AnglePrecision = Deg2Rad(2.0);
 var Phi = 0.5 * (-1.0 + Math.sqrt(5.0)); // Golden Ratio
 var StartAngleIndex = (NumPoints / 8); // eighth of gesture length
 var AngleSimilarityThreshold = Deg2Rad(30.0);
-var tmp_strokes=0;
 //
 // NDollarRecognizer class
 //
-
 function NDollarRecognizer(useBoundedRotationInvariance) // constructor
 {
 	//
 	// one predefined multistroke for each multistroke type
 	//
-	this.Multistrokes = new Array();
-
-
+	this.Multistrokes = new Array(NumMultistrokes);
 	this.Multistrokes[0] = new Multistroke("T", useBoundedRotationInvariance, new Array(
 		new Array(new Point(30,7),new Point(103,7)),
 		new Array(new Point(66,7),new Point(66,87))
@@ -222,7 +218,6 @@ function NDollarRecognizer(useBoundedRotationInvariance) // constructor
 	//
 	// The $N Gesture Recognizer API begins here -- 3 methods: Recognize(), AddGesture(), and DeleteUserGestures()
 	//
-
 	this.Recognize = function(strokes, useBoundedRotationInvariance, requireSameNoOfStrokes, useProtractor)
 	{
 		var points = CombineStrokes(strokes); // make one connected unistroke from the given strokes

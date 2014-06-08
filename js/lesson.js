@@ -1,4 +1,7 @@
 function LessonState(){
+
+
+
     this.button=0,this.closebutton=0;
     this.solidH = 100,this.solidW = 100;
     this.pen=0;
@@ -19,6 +22,15 @@ function LessonState(){
 
     this.cilieges=0,this.apples=0,this.bananas=0;
     this.ciliege=0,this.apple=0,this.ciliege=0;
+    this.status=0;
+
+    this.DISEGNO = {
+        SWIPE:{value: 0}, 
+        CIRCLE:{value: 1},
+        RECTANGLE:{value:2},
+        TRIANGLE:{value:3},
+        NORMAL:{value:4}
+    };
 
 }
 
@@ -26,7 +38,25 @@ LessonState.prototype = {
 
 
     preload : function(){
-      game.load.image('lesson1', 'assets/lesson1.png');
+
+      /*this.load.onFileComplete.add(function( progress ) { 
+        if(this.lesson_loading_finish==undefined){
+          if(this.num_file_loading==0){
+            this.num_file_loading=0;
+            this.loading_status=this.game.add.text(w/2-130, h/2-80,'', { font: '59px Arial', fill: '#FFF' });      //stampo lo score attuale
+          }else if(num_file_loading<16){
+           this.loading_status.text ='Loading'+progress.toString();
+          }
+          this.num_file_loading++;
+        }
+      });
+
+      this.load.onLoadComplete.add(function( progress ) { 
+          this.num_file_loading=0;
+          this.lesson_loading_finish=true;
+      });*/
+
+      /*game.load.image('lesson1', 'assets/lesson1.png');
       game.load.image('lesson2', 'assets/lesson2.png');
       game.load.image('lesson3', 'assets/lesson3.png');
       game.load.image('lesson4', 'assets/lesson4.png');
@@ -42,13 +72,13 @@ LessonState.prototype = {
       game.load.image('ciliege', 'assets/ciliege.png');
       game.load.image('apple', 'assets/fruit.png');
       game.load.image('ground', 'assets/solid.jpg');
-      game.load.image('exitgame', 'assets/exitgame.png');
+      game.load.image('exitgame', 'assets/exitgame.png');*/
 
     ;},
 
 
     create:  function(){
-
+      this.status=this.DISEGNO.SWIPE;
       game.physics.startSystem(Phaser.Physics.ARCADE);      
       
       this.rectangles= game.add.group();  
@@ -123,6 +153,7 @@ LessonState.prototype = {
               this.penrotating.scale.setTo(1.5,1.5);
               this.penrotating.animations.play('penrotating');
               this.playerkilled=false;
+              this.status=this.DISEGNO.CIRCLE;
             }
 
             if (game.input.activePointer.isDown) {
@@ -138,7 +169,7 @@ LessonState.prototype = {
                 var res=this.gesture.checkInputData();
                 if(res.type=='null'){
 
-                }else if(res.type=='circle'){
+                }else if(res.type=='circle'&&this.status==this.DISEGNO.CIRCLE){
                   this.penrotating.destroy();
                   this.lesson2.destroy();
                   this.lesson3=this.game.add.sprite(100,game.world.height - this.solidH-250,'lesson3');
@@ -146,7 +177,8 @@ LessonState.prototype = {
                   this.pensquare.animations.play('pensquare');
                   element = this.bananas.create(x+game.camera.x,y,'banana');
                   setCommonProperties(element);
-                }else if(res.type=='rectangle'){
+                  this.status=this.DISEGNO.RECTANGLE;
+                }else if(res.type=='rectangle'&&this.status==this.DISEGNO.RECTANGLE){
                   this.pensquare.destroy();
                   this.lesson3.destroy();
                   this.lesson4=this.game.add.sprite(100,game.world.height - this.solidH-250,'lesson4');
@@ -154,7 +186,8 @@ LessonState.prototype = {
                   this.pentriangle.animations.play('pentriangle');
                   element = this.apples.create(x+game.camera.x,y,'apple');
                   setCommonProperties(element);
-                }else if(res.type=='triangle'){
+                  this.status=this.DISEGNO.TRIANGLE;
+                }else if(res.type=='triangle'&&this.status==this.DISEGNO.TRIANGLE){
                   this.pentriangle.destroy();
                   this.lesson4.destroy();
                   this.lesson5=this.game.add.sprite(100,game.world.height - this.solidH-250,'lesson5');
@@ -164,14 +197,14 @@ LessonState.prototype = {
                   this.apples.getFirstAlive().destroy();  
                   this.bananas.getFirstAlive().destroy();  
                   this.button=game.add.button(w/2-235/2,h/2-261/2-50, 'gioca', this.nextGame, this, 0,0,0);
-
+                  this.status=this.DISEGNO.NORMAL;
                 }
               }
               this.gesture.stroke=false;
               this.gesture.clearInputData();
             }
 
-             if (onSwipeUp()&&this.playerl.body.touching.down) {
+             if (onSwipeUp()&&this.playerl.body.touching.down&&this.status==this.DISEGNO.SWIPE) {
                 this.playerl.body.velocity.y = -700;   
              }
     ;}

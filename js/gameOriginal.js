@@ -82,16 +82,15 @@
     this.reservedArea = { area: [] };
     this.dictionary = {};
 
-    this.text = [];
-    this.numex = [];
+    this.text=[];
     this.choseText=0;
     this.textGroup = 0;
-
 
     this.posCreate = 0;
     this.nextStep = 0;
     this.checkmarkbutton=0;
-    this.tutorial = true;
+    this.tutorial=true;
+    this.num_file_loading=0;
 
  }
 
@@ -100,6 +99,27 @@
 
     preload : function(){
 
+          
+      /*this.load.onFileComplete.add(function( progress ) { 
+        if(this.game_loading_finish==undefined){
+          if(this.num_file_loading==0){
+            this.num_file_loading=0;
+            this.loading_status=this.game.add.text(w/2-130, h/2-80,'', { font: '59px Arial', fill: '#FFF' });      //stampo lo score attuale
+          }else if(num_file_loading<33){
+           this.loading_status.text ='Loading:'+progress.toString();
+          }
+          this.num_file_loading++;
+        }
+      });
+
+      this.load.onLoadComplete.add(function( progress ) { 
+          this.num_file_loading=0;
+          this.game_loading_finish=true;
+      });*/
+
+
+
+      //this.loadAllContent();
     ;},
 
 
@@ -219,7 +239,10 @@
         }
 
 
-     
+        /*if(this.dino_state==this.DINO.CLOUD){
+            this.player.body.position.y=h/2-this.playerH-this.shelfH;
+            this.player.body.velocity.x=this.playerV*2;
+        }*/
 
         if (onSwipeUp() && this.player.body.touching.down) {
             if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU||this.dino_state==this.DINO.SUPERMAN){
@@ -349,6 +372,26 @@
      var element, total=0,unit=this.treeW-60;
      var origin=0;
 
+     /*for(var i=0;i<2;i++){
+      if (Phaser.Math.chanceRoll(50)){
+       element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree');
+      }else{
+        element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree2');
+        setCommonProperties(element);
+      }
+      total+=unit;
+     }
+
+     total=total+5*unit;
+     
+     origin=parseInt(total/unit);
+      for(var i=origin;i<2+origin;i++){
+       element = this.trees.create(x+(i*unit),game.world.height-this.solidH-this.treeH,'tree3');
+       setCommonProperties(element);
+       total+=unit;
+      }
+
+          total=total+5*unit;*/
 
      return total;
   }
@@ -500,8 +543,8 @@
               this.lectshape = new Shape(0, 0, this.lectW, this.lectH, 'null');
               this.lectshape.setPosition('top-left');
 
+              //this.lectshape.setLecter(this.text[this.choseText].charAt(parseInt(Math.random() * 100 % this.text[this.choseText].length)));
               this.lectshape.setLecter(this.text[this.choseText].charAt(this.firstNotRed(this.text[this.choseText].length)));
-           
               this.lectshape.setTextSize(100);
               this.lectshape.initializeBitmapData();
           }
@@ -662,28 +705,12 @@
 
         var xLecter = this.player.position.x+this.playerW-30;
         var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
-
         this.createLecter(xLecter, yLecter);
+        
         this.lects.getFirstAlive().kill();
     }
 
-    GameState.prototype.matchCactus = function () {
-        /*var repeat = true;
-        while (repeat) {
-            var wordRand = Math.round(Math.random() * JsonObj.exercises.length - 1);
-            if (JsonObj.exercises[wordRand].isWord == 1) {
-                repeat = false;
-            }
-        }
-
-        this.player.frame = 0;
-        this.player.body.velocity.x = 0;
-
-        this.setDinoWriter();
-        var word = JsonObj.exercises[wordRand].text;
-        var xWord = this.player.position.x + this.playerW - 30;
-        var yWord = game.world.height - this.bitmapH - this.solidH - this.enemyH - this.player.position.y;
-        this.createWord(xWord, yWord, word);*/
+    GameState.prototype.matchCactus=function(){
      this.decreseLife();
      this.cactuses.getFirstAlive().kill();
     }
@@ -695,10 +722,9 @@
     }
 
     GameState.prototype.matchBlackBarries=function(player,blackbarry){
-        blackbarry.kill();
-    
-        this.player.animations.play('ice');
-        this.dino_state=this.DINO.WRITER;
+      blackbarry.kill();
+      this.player.animations.play('ice');
+      this.dino_state=this.DINO.SUPERBLU;
     }
    
 
@@ -853,28 +879,12 @@
         this.shape = new Shape(xLecter-game.camera.x, yLecter,this.bitmapW,this.bitmapH,game.cache.getImage('fumetto'))
         this.shape.setLecter(this.lectshape.lecter);
 
-        this.lectshape.setPosition('center');
-        this.shape.numex = this.numex[this.choseText];
         this.shape.initializeBitmapData();
         this.lecter=this.lecters.create(xLecter,yLecter,this.shape.bmd);
         this.reservedArea.area.splice(0,1);
         this.reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + this.bitmapW, "y_": yLecter + this.bitmapH, "posX": xLecter });
         this.checkmarkbutton=game.add.button(xLecter-game.camera.x+this.bitmapW-60,yLecter+this.bitmapH-60,'checkmark',this.confirmShape, this, 0,0,0);
         this.checkmarkbutton.fixedToCamera=true;
-    }
-
-    GameState.prototype.createWord = function (x, y, word) {
-        var xWord = x;
-        var yWord = y;
-        this.shape = new Shape(xWord - game.camera.x, yWord, this.bitmapW, this.bitmapH, game.cache.getImage('fumetto'))
-        this.shape.setWord(word);
-
-        this.shape.initializeBitmapData();
-        this.lecter = this.lecters.create(xWord, yWord, this.shape.bmd);
-        this.reservedArea.area.splice(0, 1);
-        this.reservedArea.area.push({ "x": xWord, "y": yWord, "x_": xWord + this.bitmapW, "y_": yWord + this.bitmapH, "posX": xWord });
-        this.checkmarkbutton = game.add.button(xWord - game.camera.x + this.bitmapW - 60, yWord + this.bitmapH - 60, 'checkmark', this.confirmShape, this, 0, 0, 0);
-        this.checkmarkbutton.fixedToCamera = true;
     }
 
     GameState.prototype.confirmShape=function() {
@@ -928,7 +938,7 @@
 
     /*tra 100 e 250*/
     function onSwipeUp() {
-            return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 250);
+            return ((game.input.activePointer.positionDown.y - game.input.activePointer.position.y) > 50 && game.input.activePointer.duration > 100 && game.input.activePointer.duration < 400);
     }
 
     function onSwipeDown() {
@@ -941,7 +951,7 @@
     }
 
     GameState.prototype.loadAllContent=function(){
-        game.load.image('checkmark', 'assets/checkmark.png');
+        /*game.load.image('checkmark', 'assets/checkmark.png');
         game.load.image('forest', 'assets/bksprite.png');
         game.load.image('ground', 'assets/solid.jpg');
         game.load.image('apple', 'assets/fruit.png');
@@ -959,25 +969,24 @@
         game.load.image('tree2', 'assets/tree2.png');
         game.load.image('tree3', 'assets/tree3.png');
         game.load.image('morared', 'assets/morared.png');
-        game.load.image('morablack', 'assets/morablack.png');
+        game.load.image('morablack', 'assets/morablack.png');*/
 
-        game.load.image('applex2', 'assets/fruitx2.png');
+        /*game.load.image('applex2', 'assets/fruitx2.png');
         game.load.image('applex5', 'assets/fruitx5.png');
         game.load.image('bananax2', 'assets/bananax2.png');
         game.load.image('bananax5', 'assets/bananax5.png');
         game.load.image('ciliegex2', 'assets/ciliegex2.png');
-        game.load.image('ciliegex5', 'assets/ciliegex5.png');
-        game.load.image('samsungpen','assets/samsungpen.png');
+        game.load.image('ciliegex5', 'assets/ciliegex5.png');*/
 
-        game.load.image('exitgame', 'assets/exitgame.png');
+        /*game.load.image('exitgame', 'assets/exitgame.png');
         game.load.spritesheet('playstop', 'assets/stop.png',60,60);
 
         game.load.spritesheet('boom', 'assets/boom.png', this.boomW, this.boomH);
-        game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);
-        game.load.spritesheet('dude', 'assets/playerbolla.png', this.playerW, this.playerH,10);
+        game.load.spritesheet('enemy', 'assets/bombe_.png', this.enemyW, this.enemyH);*/
+        /*game.load.spritesheet('dude', 'assets/playerbolla.png', this.playerW, this.playerH,10);
 
         game.load.audio('audio_game', 'assets/audio_game.mp3');
-        game.load.audio('effect_sound', 'assets/effect_sound.mp3');
+        game.load.audio('effect_sound', 'assets/effect_sound.mp3');*/
 
     }
 
@@ -1107,25 +1116,12 @@
 
        this.scoreTextCiliege = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreTextCiliege.fixedToCamera = true;
-       
-       var k = 0;
-       for (var i = 0; i < JsonObj.exercises.length; i++) {
-           if (JsonObj.exercises[i].isWord === true) {
-               this.text[k] = JsonObj.exercises[i].text.toString();
-               this.numex[k] = i;
-               k++;
-           }
-       }
 
-
-      /*
        this.text[0]="PINI";
        this.text[1]="TINTI"
        this.text[2]='DINI';
-       */
-
+       
        this.generateText();
-      
        
   }
 

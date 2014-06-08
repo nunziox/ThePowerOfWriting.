@@ -8,7 +8,26 @@ OverState.prototype = {
 
 
     preload : function(){
-       game.load.image('finish', 'assets/finish.png');
+
+       /*this.load.onFileComplete.add(function( progress ) { 
+        if(this.over_loading_finish==undefined){
+          if(this.num_file_loading==0){
+            this.num_file_loading=0;
+            this.loading_status=this.game.add.text(w/2-130, h/2-80,'', { font: '59px Arial', fill: '#FFF' });      //stampo lo score attuale
+          }else if(num_file_loading<1){
+           this.loading_status.text ='Loading'+progress.toString();
+          }
+          this.num_file_loading++;
+        }
+      });
+
+      this.load.onLoadComplete.add(function( progress ) { 
+          this.num_file_loading=0;
+          this.over_loading_finish=true;
+      });*/
+
+
+       //game.load.image('finish', 'assets/finish.png');
     ;},
 
 

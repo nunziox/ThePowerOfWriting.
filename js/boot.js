@@ -14,7 +14,7 @@ BootState.prototype = {
        this.scale.scaleMode = Phaser.ScaleManager.EXACT_FIT;
        this.scale.setScreenSize(true);
        var req = new XMLHttpRequest();
-       req.open('GET', 'points.json', false);
+       req.open('GET', 'pointsN.json', false);
        req.send(null);
        if (req.status === 200) {
            JsonObj = JSON.parse(req.responseText);
