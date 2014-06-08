@@ -38,8 +38,9 @@
 
         function create() {
             shape = new Shape(posX, posY, bitmapW, bitmapH,game.cache.getImage('fumetto'));
-            shape.setLecter("D");
+            shape.setLecter("T");
             shape.setTextSize(50);
+            shape.numex = 10;
             shape.initializeBitmapData();
             lecters = game.add.group();
             lecters.enableBody = true;

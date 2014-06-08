@@ -24,7 +24,8 @@
     this.bananas=0,this.banana=0;
     this.cilieges=0,this.ciliege=0;
     this.trees=0,this.tree=0;
-    this.fruits=0,this.fruit=0;
+    this.fruits = 0, this.fruit = 0;
+    this.ananases = 0; this.ananas = 0;
     this.blackbarries=0,this.blackbarry=0;
     this.bananasx2=0,this.bananasx5=0,this.ciliegex2=0,this.ciliegex5=0,this.applex2=0,this.applex5=0;
 
@@ -47,7 +48,9 @@
     this.treeW=296,this.treeH=566;
     this.fruitW=60,this.fruitH=60;
     this.lifeW=80,this.lifeH=50;
-    this.blackbarryW=60,this.blackbarryH=60;
+    this.blackbarryW = 60, this.blackbarryH = 60;
+    this.ananasW = 60, this.ananasH = 60;
+    this.genericButtonW = 60, this.genericButtonH = 60;
 
     /*x velocity elements*/
     this.playerV=180;
@@ -138,7 +141,8 @@
         game.physics.arcade.overlap(this.player, this.enemies,this.matchEnemy, null, this);
         game.physics.arcade.overlap(this.player, this.bananas,this.matchBanana, null, this);
         game.physics.arcade.overlap(this.player, this.cilieges,this.matchCiliege, null, this);
-        game.physics.arcade.overlap(this.player, this.fruits,this.matchFruit, null, this);
+        game.physics.arcade.overlap(this.player, this.fruits, this.matchFruit, null, this);
+        game.physics.arcade.overlap(this.player, this.ananases, this.matchAnanas, null, this);
         game.physics.arcade.overlap(this.player, this.blackbarries,this.matchBlackBarries, null, this);
 
       
@@ -186,6 +190,11 @@
         if(this.lects.countLiving()>0){
             this.lects.getFirstAlive().anchor.setTo(0.5,0.5);
             this.lects.getFirstAlive().angle+=2;
+        }
+
+        if (this.ananases.countLiving()>0) {
+            this.ananases.getFirstAlive().anchor.setTo(0.5, 0.5);
+            this.ananases.getFirstAlive().angle += 2;
         }
 
         for(var i=0;i<this.fruits.countLiving();i++){
@@ -507,10 +516,17 @@
           }
 
 
-          if (Phaser.Math.chanceRoll(80)) {
-              element = this.lects.create(x + total, game.world.height - this.solidH - this.lectH - this.lectH / 2, this.lectshape.bmd);
-              setCommonProperties(element);
-          }
+          /*MOMENTANEO COMMENT*/
+          //if (Phaser.Math.chanceRoll(80)) {
+             element = this.lects.create(x + total, game.world.height - this.solidH - this.lectH - this.lectH / 2, this.lectshape.bmd);
+             setCommonProperties(element);
+          //}
+
+          /*SOSTITUTO MOMENTANEO*/
+          //if (Phaser.Math.chanceRoll(80)) {
+             //element = this.ananases.create(x + total, game.world.height - this.solidH - this.ananasH - this.ananasH / 2, 'ananas');
+             //setCommonProperties(element);
+          //}
 
           total += unit * 10;
       }
@@ -583,6 +599,20 @@
         this.score += 1;                                     //aumento lo score di 10 punti
         this.scoreText.text = this.score;         //inserisco un nuovo valore nella scritta
         scoreApple=this.score;
+    }
+
+    GameState.prototype.matchAnanas = function (player, ananas) {
+        this.player.frame = 0;
+        this.player.body.velocity.x = 0;
+
+        this.setDinoWriter();
+
+        var xLecter = this.player.position.x + this.playerW - 30;
+        var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
+
+        this.isWord = true;
+        this.createLecter(xLecter, yLecter);
+        ananas.kill();
     }
 
     GameState.prototype.matchBanana=function(player,banana){
@@ -663,6 +693,7 @@
         var xLecter = this.player.position.x+this.playerW-30;
         var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
 
+        this.isWord = false;
         this.createLecter(xLecter, yLecter);
         this.lects.getFirstAlive().kill();
     }
@@ -696,9 +727,8 @@
 
     GameState.prototype.matchBlackBarries=function(player,blackbarry){
         blackbarry.kill();
-    
         this.player.animations.play('ice');
-        this.dino_state=this.DINO.WRITER;
+        this.dino_state=this.DINO.SUPERBLU;
     }
    
 
@@ -784,7 +814,8 @@
         clear(this.bananas,this.bananaW);
         clear(this.cilieges,this.ciliegeW);
         clear(this.trees,this.treeW);
-        clear(this.lects,this.lectW);
+        clear(this.lects, this.lectW);
+        clear(this.ananases, this.ananasW);
         clear(this.blackbarries,this.blackbarryW);
     }
 
@@ -851,7 +882,20 @@
         var xLecter = x;
         var yLecter = y;
         this.shape = new Shape(xLecter-game.camera.x, yLecter,this.bitmapW,this.bitmapH,game.cache.getImage('fumetto'))
-        this.shape.setLecter(this.lectshape.lecter);
+
+        if (!this.isWord) this.shape.setLecter(this.lectshape.lecter);
+        this.shape.isWord = this.isWord;
+        
+        /*Adattamento della bitmap a comparsa*/
+        var bitmapMarginW = 150;
+        var bitmapMarginH = 150;
+        var _g = this.shape.getShapeMaxMin();
+        var _c = this.shape.getAbsoluteShapeMaxMin(_g.minX, _g.minY, _g.maxX, _g.maxY);
+        this.shape.bitmapW = _g.lenW + bitmapMarginW;
+        this.shape.bitmapH = (_c.maxWordY - _c.minWordY) + bitmapMarginH;
+        this.bitmapW = this.shape.bitmapW;
+        this.bitmapH = this.shape.bitmapH;
+        /******/
 
         this.lectshape.setPosition('center');
         this.shape.numex = this.numex[this.choseText];
@@ -859,7 +903,7 @@
         this.lecter=this.lecters.create(xLecter,yLecter,this.shape.bmd);
         this.reservedArea.area.splice(0,1);
         this.reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + this.bitmapW, "y_": yLecter + this.bitmapH, "posX": xLecter });
-        this.checkmarkbutton=game.add.button(xLecter-game.camera.x+this.bitmapW-60,yLecter+this.bitmapH-60,'checkmark',this.confirmShape, this, 0,0,0);
+        this.checkmarkbutton = game.add.button((xLecter - game.camera.x) + this.bitmapW, yLecter + this.bitmapH-this.genericButtonH, 'checkmark', this.confirmShape, this, 0, 0, 0);
         this.checkmarkbutton.fixedToCamera=true;
     }
 
@@ -867,7 +911,6 @@
         var xWord = x;
         var yWord = y;
         this.shape = new Shape(xWord - game.camera.x, yWord, this.bitmapW, this.bitmapH, game.cache.getImage('fumetto'))
-        this.shape.setWord(word);
 
         this.shape.initializeBitmapData();
         this.lecter = this.lecters.create(xWord, yWord, this.shape.bmd);
@@ -1038,7 +1081,10 @@
     this.enemies.enableBody = true;
 
     this.blackbarries=game.add.group();
-    this.blackbarries.enableBody=true;    
+    this.blackbarries.enableBody = true;
+
+    this.ananases = game.add.group();
+    this.ananases.enableBody = true;
 
     this.textGroup=game.add.group();
 

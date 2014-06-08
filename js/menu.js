@@ -76,6 +76,7 @@ MenuState.prototype = {
       game.load.image('tree3', 'assets/tree3.png');
       game.load.image('morared', 'assets/morared.png');
       game.load.image('morablack', 'assets/morablack.png');
+      game.load.image('ananas', 'assets/ananas.png');
 
       game.load.image('applex2', 'assets/fruitx2.png');
       game.load.image('applex5', 'assets/fruitx5.png');

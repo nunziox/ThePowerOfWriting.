@@ -26,7 +26,6 @@ function Shape(posX, posY, bitmapW, bitmapH,img) {
     this.position='center';
 
     this.marginLine=0;
-    this.isWord=false;
     this.upperBound=0;
     this.lowerBound=0;
     this.numex=8;
@@ -56,13 +55,9 @@ Shape.prototype.setTextSize=function(size){
 
 Shape.prototype.setLecter = function (lecter) {
     this.lecter = lecter;
-    this.isWord = false;
 }
 
-Shape.prototype.setWord = function (word) {
-    this.word = word;
-    this.isWord = true;
-}
+
 
 Shape.prototype.setPosition = function (position) {
  this.position=position;
@@ -80,11 +75,13 @@ Shape.prototype.clearInputData = function () {
     this._points = new Array();
     this._r = new NDollarRecognizer(0);
 
-    this.wsize = parseInt(this.bitmapH / 60);
+    this.wsize = Math.floor(this.bitmapH / 40);
 
     this.writeLecter();
 
 }
+
+
 
 Shape.prototype.initializeBitmapData = function () {
 
@@ -94,7 +91,7 @@ Shape.prototype.initializeBitmapData = function () {
     }
 
     this.bmd.context.fillStyle = '#BBBBBB';
-    this.bmd.context.lineWidth = 10;
+    this.bmd.context.lineWidth = 15;
 
     this._strokes = new Array();
     this._points = new Array();
@@ -128,7 +125,7 @@ Shape.prototype.initializeBitmapData = function () {
     this.Multistrokes[0] = new Multistroke(name, useBoundedRotationInvariance,strokes_);*/
 
     //this.wsize = this.bitmapH / 30;
-    this.wsize = parseInt(this.bitmapH / 60);
+    this.wsize = Math.floor(this.bitmapH / 40);
 
     if (this.isWord == true) {
         this.writeLecter(0);
@@ -145,13 +142,64 @@ Shape.prototype.initializeBitmapData = function () {
 
 }
 
+Shape.prototype.getShapeMaxMin = function () {
+    
+    var margin=15;
+    var minX = [];
+    var minY = [];
+    var maxX = [];
+    var maxY = [];
+    var lenW = 0;
+
+    var symbols = JsonObj.exercises[this.numex].symbols;
+    for (var k = 0; k < symbols.length; k++) {
+        var strokes = symbols[k].strokes;
+        /*Individuiamo punti di min e max*/
+        for (var i = 0; i < strokes.length; i++) {
+            var points = strokes[i].stroke;
+            for (var j = 0; j < points.length; j++) {
+                if (i == 0 && j == 0) {
+                    minX[k] = points[j].X;
+                    minY[k] = points[j].Y;
+                    maxX[k] = points[j].X;
+                    maxY[k] = points[j].Y;
+                } else {
+                    /*Controllare la pazzia del 99... cose assurde °.°*/
+                    if (minX[k] > points[j].X) { minX[k] = points[j].X; }
+                    if (minY[k] > points[j].Y) { minY[k] = points[j].Y; }
+                    if (maxX[k] < points[j].X) { maxX[k] = points[j].X; }
+                    if (maxY[k] < points[j].Y) { maxY[k] = points[j].Y; }
+                }
+            }
+        }
+        lenW += (maxX[k] - minX[k]) + margin;
+    }
+    lenW -= margin;
+
+    return { "minX": minX, "maxX": maxX, "minY": minY, "maxY": maxY,"lenW":lenW };
+}
+
+Shape.prototype.getAbsoluteShapeMaxMin = function (minX,minY,maxX,maxY) {
+   var maxWordY=maxY[0];
+   var minWordY=minY[0];
+   for(var i=0;i<maxY.length;i++){
+     if(maxY[i]>maxWordY) maxWordY=maxY[i];
+     if(minY[i]<minWordY) minWordY=minY[i];
+    }     
+    var maxWordX=maxX[0];
+    var minWordX=minX[0];
+    for(var i=0;i<maxX.length;i++){
+        if(maxX[i]>maxWordX) maxWordX=maxX[i];
+        if(minX[i]<minWordX) minWordX=minX[i];
+    }
+    return {"maxWordY":maxWordY,"minWordY":minWordY,"maxWordX":maxWordX,"minWordX":minWordX};
+}
 
 Shape.prototype.writeLecter = function (isSubWord) {
 
     var thereis = false;
-
     var lastSpace=0;
-    var lenW=0;
+    //var lenW=0;
     var lenH=0;
     var margin=15;
     var offset=0;
@@ -161,71 +209,30 @@ Shape.prototype.writeLecter = function (isSubWord) {
 
 
     if (this.position === "center") {
-        this.isword=JsonObj.exercises[this.numex].isWord;
-   
-        thereis = true;
                 
         this.bmd.context.beginPath();
 
-        var minX=[];
-        var minY=[];
-        var maxX=[];
-        var maxY=[];
+        var _g = this.getShapeMaxMin();
+        var minX = _g.minX;
+        var minY = _g.minY;
+        var maxX = _g.maxX;
+        var maxY = _g.maxY;
+        var lenW = _g.lenW;
+                  
+        /*Trovo l'altezza della lettera più alta*/
+        var maxYWord = (maxY[0] - minY[0]);
         var symbols = JsonObj.exercises[this.numex].symbols;
         for(var k=0;k<symbols.length;k++){
-            var strokes=symbols[k].strokes;
-            /*Individuiamo punti di min e max*/
-            for (var i = 0; i < strokes.length; i++) {
-                var points = strokes[i].stroke;
-                for (var j = 0; j < points.length; j++) {
-                    if (i == 0 && j == 0) {
-                        minX[k] = points[j].X;
-                        minY[k] = points[j].Y;
-                        maxX[k] = points[j].X;
-                        maxY[k] = points[j].Y;
-                    } else {
-                        /*Controllare la pazzia del 99... cose assurde °.°*/
-                        if (minX[k] > points[j].X){ minX[k] = points[j].X;}
-                        if (minY[k] > points[j].Y){ minY[k] = points[j].Y;}
-                        if (maxX[k] < points[j].X){maxX[k] = points[j].X;}
-                        if (maxY[k] < points[j].Y){ maxY[k] = points[j].Y;}
-                    }
-                }
-            }
-       
-
-            /*Larghezza e altezza dell'intera parola*/
-            lenW+=(maxX[k]-minX[k])+margin;
-            lenH=(maxY[0]-minY[0]);
-                                                  
-        }
-
-                  
-                                    
-        lenW-=margin;
-
-                
-        /*Trovo l'altezza della lettera più alta*/
-        var maxYWord=(maxY[0]-minY[0]);
-        for(var k=0;k<symbols.length;k++){
             if((maxY[k]-minY[k]) > maxYWord) maxYWord=(maxY[k]-minY[k]);
             if((maxY[k]-minY[k]) > maxYWord) maxYWord=(maxY[k]-minY[k]);
         }
 
-        var maxWordY=maxY[0];
-        var minWordY=minY[0];
-        for(var i=0;i<maxY.length;i++){
-            if(maxY[i]>maxWordY) maxWordY=maxY[i];
-            if(minY[i]<minWordY) minWordY=minY[i];
-        }
-
-                
-        var maxWordX=maxX[0];
-        var minWordX=minX[0];
-        for(var i=0;i<maxX.length;i++){
-            if(maxX[i]>maxWordX) maxWordX=maxX[i];
-            if(minX[i]<minWordX) minWordX=minX[i];
-        }
+        _g = this.getAbsoluteShapeMaxMin(minX, minY, maxX, maxY);
+        var maxWordY = _g.maxWordY;
+        var minWordY = _g.minWordY;
+        var maxWordX = _g.maxWordX;
+        var minWordX = _g.minWordX
+  
 
                 var indexWord = 0;
 
@@ -261,23 +268,26 @@ Shape.prototype.writeLecter = function (isSubWord) {
                   
                 }
 
-                this.marginLine = 15;
+                this.marginLine = 10;
              
                 /*Inseriamo le righe*/
-                if (isSubWord) {
-                    this.upperBound = minWordY - minWordY + this.bitmapH / 2 - maxYWord / 2;
+                if (isSubWord) lenW = (maxX[indexWord] - minX[indexWord]);
+
+                    this.upperBound = this.bitmapH / 2 - maxYWord / 2;
                     this.lowerBound = maxWordY - minWordY + this.bitmapH / 2 - maxYWord / 2;
-                    var x0 = this.bitmapW / 2 - (maxX[indexWord] - minX[indexWord]) / 2
-                    this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, (maxX[indexWord] - minX[indexWord]) + 20, 2);
-                    this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, (maxX[indexWord] - minX[indexWord]) + 20, 2);
-                } else {
+                    var x0 = this.bitmapW / 2 - lenW / 2;
+                    this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, lenW + 20, 2);
+                    this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, lenW + 20, 2);
+                /*} else {
+
                     this.upperBound = minY[indexWord] - minY[indexWord] + this.bitmapH / 2 - maxY[indexWord] / 2;
                     this.lowerBound = maxY[indexWord] - minY[indexWord] + this.bitmapH / 2 - maxY[indexWord] / 2;
                     var x0 = minX[indexWord] + this.bitmapW / 2 - (maxY[indexWord] - minY[indexWord]) / 2;
                     this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, lenW + 20, 2);
                     this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, lenW + 20, 2);
-                }
-
+                }*/
+                //this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, (maxX[indexWord] - minX[indexWord]) + 20, 2);
+                //this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, (maxX[indexWord] - minX[indexWord]) + 20, 2);
 
          }
 
@@ -296,14 +306,20 @@ Shape.prototype.captureInputData = function () {
 
     this.bmd.context.fillStyle = '#000000';
 
-    this.current.x =parseInt(game.input.activePointer.position.x-this.posX);
-    this.current.y =parseInt(game.input.activePointer.position.y-this.posY);
+    //this.current.x =parseInt(game.input.activePointer.position.x-this.posX);
+    //this.current.y = parseInt(game.input.activePointer.position.y - this.posY);
 
+
+    this.current.x =  Math.round(game.input.activePointer.position.x - this.posX);
+    this.current.y = Math.round(game.input.activePointer.position.y - this.posY);
+
+    var curX = this.current.x;
+    var curY = this.current.y;
 
     for(var i=0;i<this.wsize;i++){
         for(var j=0;j<this.wsize;j++){
 
-            var color=this.getpixelcolour(this.current.x+i,this.current.y+j);
+            var color=this.getpixelcolour(curX+i,curY+j);
 
             if(color[0]===255&&color[1]===0&&color[2]===0){
                 this.innerPoint+=1;
@@ -385,6 +401,7 @@ Shape.prototype.upperBoundError = function () {
 Shape.prototype.lowerBoundError = function () {
     var pixels = this.bmd.context.getImageData(0, 0, this.bitmapW, this.bitmapH);
     var amount = 0;
+    console.log("LowerBound"+this.lowerBound);
     for (var i = 0; i < this.bitmapW; i++) {
         for (var j = this.lowerBound+this.marginLine; j < this.bitmapH; j++) {
             var index = ((j * (pixels.width * 4)) + (i * 4));
@@ -398,6 +415,8 @@ Shape.prototype.lowerBoundError = function () {
     return amount;
 }
 
+
+
 Shape.prototype.checkInputData = function () {
     var res = {};
 
@@ -409,11 +428,13 @@ Shape.prototype.checkInputData = function () {
     var errorDown = this.lowerBoundError();
 
 
-    if(this.isword==false&&this._strokes.length > 0){
-       var result = this._r.Recognize(this._strokes, 0, 0, 1);
-       res = { "matchPercent": percent, "errorUp": errorUp, "errorDown": errorDown, "point": this.round(result.Score, 2), "type": result.Name };
-    }else{
-        res = { "matchPercent": percent, "errorUp": errorUp, "errorDown": errorDown, "point": 'null', "type": 'null' };
+    var result;
+    if (this.isWord == false && this._strokes.length > 0) {
+        result = this._r.Recognize(this._strokes, 0, 0, 1);
+        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": this.round(result.Score, 2), "type": result.Name };
+        alert("Percentuale: " + percent + ", ErrorUp: " + errorUp + ", ErrorDown:" + errorDown + ", DollarNPoint:" + this.round(result.Score, 2), ", type: " + result.Name);
+    } else if (this.isWord) {
+        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": 'null', "type": 'null' };
     }
     point = 0;
 
