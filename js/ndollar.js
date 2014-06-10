@@ -150,10 +150,46 @@ function NDollarRecognizer(useBoundedRotationInvariance) // constructor
 	//
 	// one predefined multistroke for each multistroke type
 	//
-	this.Multistrokes = new Array();
+    this.Multistrokes = new Array();
+    this.useBounded = useBoundedRotationInvariance;
 
+    this.listLecter = [];
 
-	this.Multistrokes[0] = new Multistroke("T", useBoundedRotationInvariance, new Array(
+    this.searchElement = function (el) {
+        var c = 0;
+        for (var i = 0; i < this.listLecter.length; i++) {
+            if (this.listLecter[i] == el)
+                c = 1;
+        }
+        return c;
+    }
+
+    var name;
+    for(var s=0;s<JsonObj.exercises.length;s++){
+        var symbols = JsonObj.exercises[s].symbols;
+
+        //if (!JsonObj.exercises[s].isWord) {
+            for (var index = 0; index < symbols.length; index++) {
+                strokes_ = [];
+                var strokes = symbols[index].strokes;
+                name = symbols[index].symbol
+                if (!this.searchElement(name)) {
+                    for (var i = 0; i < strokes.length; i++) {
+                        stroke = [];
+                        var points = strokes[i].stroke;
+                        for (var j = 0; j < points.length ; j++) {
+                            stroke[stroke.length] = new Point(parseInt(points[j].X), parseInt(points[j].Y));
+                        }
+                        strokes_[strokes_.length] = stroke;
+                    }
+                    this.Multistrokes[this.Multistrokes.length] = new Multistroke(name, this.useBounded, strokes_);
+                    this.listLecter[this.listLecter.length] = name;
+                }
+            }
+        //} 
+    }
+
+	/*this.Multistrokes[0] = new Multistroke("T", useBoundedRotationInvariance, new Array(
 		new Array(new Point(30,7),new Point(103,7)),
 		new Array(new Point(66,7),new Point(66,87))
 	));
@@ -218,10 +254,15 @@ function NDollarRecognizer(useBoundedRotationInvariance) // constructor
 	this.Multistrokes[15] = new Multistroke("half-note", useBoundedRotationInvariance, new Array(
 		new Array(new Point(546,465),new Point(546,531)),
 		new Array(new Point(540,530),new Point(536,529),new Point(533,528),new Point(529,529),new Point(524,530),new Point(520,532),new Point(515,535),new Point(511,539),new Point(508,545),new Point(506,548),new Point(506,554),new Point(509,558),new Point(512,561),new Point(517,564),new Point(521,564),new Point(527,563),new Point(531,560),new Point(535,557),new Point(538,553),new Point(542,548),new Point(544,544),new Point(546,540),new Point(546,536))
-	));
-	//
-	// The $N Gesture Recognizer API begins here -- 3 methods: Recognize(), AddGesture(), and DeleteUserGestures()
-	//
+	));*/
+
+
+
+	this.addMultiStroke = function (name, _strokes) {
+	    this.Multistrokes[this.Multistrokes.length] = new Multistroke(name, this.useBounded, _strokes);
+	}
+
+
 
 	this.Recognize = function(strokes, useBoundedRotationInvariance, requireSameNoOfStrokes, useProtractor)
 	{

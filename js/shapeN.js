@@ -21,15 +21,15 @@ function Shape(posX, posY, bitmapW, bitmapH,img) {
     this.lecter = 0;
     this.numSymbol = 0;
     this.word = 0;
-    this.isWord = false;
+    this.writeWord = false;
     this.textSize=200;
     this.position='center';
 
     this.marginLine=0;
     this.upperBound=0;
     this.lowerBound=0;
-    this.numex=8;
-    this.redPixel=0;
+    this.redPixel = 0;
+    this.numex = 0;
 
     this.innerPoint=0;
     this.totalCountedPoint=0;
@@ -97,39 +97,13 @@ Shape.prototype.initializeBitmapData = function () {
     this._points = new Array();
 
 
-    this._r = new NDollarRecognizer();
-   
-        /*Aggiunta degli stroke a $N*/
-    /*var name=JsonObj.exercises[1].text;
-    var symbols = JsonObj.exercises[10].symbols;
-    var strokes_=new Array();
-    var stroke=new Array();
-    for(var k=0;k<3;k++){
-        var strokes=symbols[k].strokes;
-        for (var i = 0; i < strokes.length; i++) {
-            var points=strokes[i].stroke;
-            for (var j = 0; j < points.length ; j++) {
-                stroke.push(new Point(parseInt(points[j].X),parseInt(points[j].Y)));
-            }
-            strokes_.push(stroke);
-            stroke=new Array();
-        }
-    }
-    /*stroke.push(new Point(30,7));
-    stroke.push(new Point(103,7));
-    strokes_.push(stroke);
-    stroke=new Array();
-    stroke.push(new Point(66,7));
-    stroke.push(new Point(66,87));
-    stroke=new Array();
-    this.Multistrokes[0] = new Multistroke(name, useBoundedRotationInvariance,strokes_);*/
-
-    //this.wsize = this.bitmapH / 30;
+    this._r = new NDollarRecognizer(0);
+  
     this.wsize = Math.floor(this.bitmapH / 40);
 
-    if (this.isWord == true) {
+    if (this.writeWord == true) {
         this.writeLecter(0);
-    } else if (this.position == 'top-left'&&this.isWord==false) {
+    } else if (this.position == 'top-left'&&this.writeWord==false) {
         this.bmd.context.textBaseline = "top";
         this.bmd.context.textAlign = 'center';
         this.bmd.context.fillStyle = "Red";
@@ -199,7 +173,6 @@ Shape.prototype.writeLecter = function (isSubWord) {
 
     var thereis = false;
     var lastSpace=0;
-    //var lenW=0;
     var lenH=0;
     var margin=15;
     var offset=0;
@@ -207,6 +180,10 @@ Shape.prototype.writeLecter = function (isSubWord) {
     var x0=0;
     var y0=0;
 
+    /*Array temporanei per l'inserimento degli stroke in $n*/
+    var strokes_;
+    var stroke;
+    /********************************************************/
 
     if (this.position === "center") {
                 
@@ -234,80 +211,78 @@ Shape.prototype.writeLecter = function (isSubWord) {
         var minWordX = _g.minWordX
   
 
+        var strokes_;
+        var stroke;
+
+
                 var indexWord = 0;
 
+                strokes_ = [];
                 for(var index=0;index<symbols.length;index++){
                       offset=0;
                       if(index>0){
                         lastSpace+=(maxX[index-1]-minX[index-1])+margin;
                       }
                     
-              
+   
                       var strokes = symbols[index].strokes;
                       for (var i = 0; i < strokes.length; i++) {
                           var points = strokes[i].stroke;
+                          stroke = [];
                           for (var j = 0; j < points.length ; j++) {
                               if (j === 0) {
                                   if (isSubWord && symbols[index].symbol == this.lecter) {
                                       this.bmd.context.moveTo(points[j].X - minX[index] + this.bitmapW / 2 - (maxX[index] - minX[index]) / 2, points[j].Y - minY[index] + this.bitmapH / 2 -(maxY[index] - minY[index]) / 2);
+                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
                                   } else if (!isSubWord) {
                                       this.bmd.context.moveTo(points[j].X - minX[index] + lastSpace + this.bitmapW / 2 - lenW / 2, points[j].Y - minY[index] + this.bitmapH / 2 - maxYWord / 2);
+                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
                                   }
                               } else {
                                   if (isSubWord && symbols[index].symbol == this.lecter) {
                                       this.bmd.context.lineTo(points[j].X - minX[index] + this.bitmapW / 2 - (maxX[index] - minX[index]) / 2, points[j].Y - minY[index] + this.bitmapH / 2 - (maxY[index] - minY[index]) / 2);
                                       indexWord = index;
+                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
                                   } else if (!isSubWord) {
                                       this.bmd.context.lineTo(points[j].X - minX[index] + lastSpace + this.bitmapW / 2 - lenW / 2, points[j].Y - minY[index] + this.bitmapH / 2 - maxYWord / 2);
+                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
                                   }
                               }
                           }
+                          if (isSubWord && symbols[index].symbol == this.lecter) strokes_[strokes_.length] = stroke;
                       }
                       this.bmd.context.strokeStyle = '#ff0000';
                       this.bmd.context.stroke();
                   
                 }
 
+         
+
+                
+               //if(!this.writeWord) this._r.addMultiStroke(this.lecter,strokes_.slice());
+
                 this.marginLine = 10;
              
                 /*Inseriamo le righe*/
                 if (isSubWord) lenW = (maxX[indexWord] - minX[indexWord]);
 
+                if (!this.isItalic) {
                     this.upperBound = this.bitmapH / 2 - maxYWord / 2;
                     this.lowerBound = maxWordY - minWordY + this.bitmapH / 2 - maxYWord / 2;
                     var x0 = this.bitmapW / 2 - lenW / 2;
                     this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, lenW + 20, 2);
                     this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, lenW + 20, 2);
-                /*} else {
-
-                    this.upperBound = minY[indexWord] - minY[indexWord] + this.bitmapH / 2 - maxY[indexWord] / 2;
-                    this.lowerBound = maxY[indexWord] - minY[indexWord] + this.bitmapH / 2 - maxY[indexWord] / 2;
-                    var x0 = minX[indexWord] + this.bitmapW / 2 - (maxY[indexWord] - minY[indexWord]) / 2;
-                    this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, lenW + 20, 2);
-                    this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, lenW + 20, 2);
-                }*/
-                //this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, (maxX[indexWord] - minX[indexWord]) + 20, 2);
-                //this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, (maxX[indexWord] - minX[indexWord]) + 20, 2);
+                }
+           
 
          }
-
-    /*this.bmd.context.shadowColor = '#000000';
-    this.bmd.context.shadowBlur = 0;
-    this.bmd.context.shadowOffsetX = 0;
-    this.bmd.context.shadowOffsetY = 0;*/
-
 }
 
 
 
 Shape.prototype.captureInputData = function () {
     
-
-
     this.bmd.context.fillStyle = '#000000';
-
-    //this.current.x =parseInt(game.input.activePointer.position.x-this.posX);
-    //this.current.y = parseInt(game.input.activePointer.position.y - this.posY);
 
 
     this.current.x =  Math.round(game.input.activePointer.position.x - this.posX);
@@ -316,20 +291,22 @@ Shape.prototype.captureInputData = function () {
     var curX = this.current.x;
     var curY = this.current.y;
 
-    for(var i=0;i<this.wsize;i++){
-        for(var j=0;j<this.wsize;j++){
-
-            var color=this.getpixelcolour(curX+i,curY+j);
-
-            if(color[0]===255&&color[1]===0&&color[2]===0){
-                this.innerPoint+=1;
-            }
-
-            if(!(color[0]===0&&color[1]===0&&color[2]===0)){
-                this.totalCountedPoint+=1;
-            }
-        }
+    var color = this.getpixelcolour(curX,curY);
+    if (color[0] === 255 && color[1] === 0 && color[2] === 0) {
+        this.innerPoint += 1;
     }
+    if (!(color[0] === 0 && color[1] === 0 && color[2] === 0)) {
+        this.totalCountedPoint += 1;
+    }
+
+    var color = this.getpixelcolour(curX+this.wsize, curY+this.wsize);
+    if (color[0] === 255 && color[1] === 0 && color[2] === 0) {
+        this.innerPoint += 1;
+    }
+    if (!(color[0] === 0 && color[1] === 0 && color[2] === 0)) {
+        this.totalCountedPoint += 1;
+    }
+
 
 
     if(this.stroke){
@@ -401,7 +378,7 @@ Shape.prototype.upperBoundError = function () {
 Shape.prototype.lowerBoundError = function () {
     var pixels = this.bmd.context.getImageData(0, 0, this.bitmapW, this.bitmapH);
     var amount = 0;
-    console.log("LowerBound"+this.lowerBound);
+    //console.log("LowerBound"+this.lowerBound);
     for (var i = 0; i < this.bitmapW; i++) {
         for (var j = this.lowerBound+this.marginLine; j < this.bitmapH; j++) {
             var index = ((j * (pixels.width * 4)) + (i * 4));
@@ -423,22 +400,23 @@ Shape.prototype.checkInputData = function () {
     var percent = (this.innerPoint / this.totalCountedPoint) * 100;
     this.totalCountedPoint = 0;
     this.innerPoint = 0;
+    this.isItalic = false;
 
     var errorUp = this.upperBoundError();
     var errorDown = this.lowerBoundError();
 
 
     var result;
-    if (this.isWord == false && this._strokes.length > 0) {
+    if (this.writeWord == false && this._strokes.length > 0) {
         result = this._r.Recognize(this._strokes, 0, 0, 1);
         res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": this.round(result.Score, 2), "type": result.Name };
-        alert("Percentuale: " + percent + ", ErrorUp: " + errorUp + ", ErrorDown:" + errorDown + ", DollarNPoint:" + this.round(result.Score, 2), ", type: " + result.Name);
-    } else if (this.isWord) {
-        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": 'null', "type": 'null' };
+        alert("Percentuale: " + percent + ", ErrorUp: " + errorUp + ", ErrorDown:" + errorDown + ", DollarNPoint:" + this.round(result.Score, 2)+", type: " + result.Name);
+    } else if (this.writeWord) {
+        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": 'null', "type": 'null', "strokes": this._strokes };
     }
     point = 0;
 
-
+ 
     this.clearInputData();
     return res;
 }

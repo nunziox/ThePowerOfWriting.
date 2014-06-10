@@ -26,7 +26,8 @@
     this.trees=0,this.tree=0;
     this.fruits = 0, this.fruit = 0;
     this.ananases = 0; this.ananas = 0;
-    this.blackbarries=0,this.blackbarry=0;
+    this.blackbarries = 0, this.blackbarry = 0;
+    this.fragola = 0; this.fragoles = 0;
     this.bananasx2=0,this.bananasx5=0,this.ciliegex2=0,this.ciliegex5=0,this.applex2=0,this.applex5=0;
 
    /*size of all elements*/
@@ -51,6 +52,7 @@
     this.blackbarryW = 60, this.blackbarryH = 60;
     this.ananasW = 60, this.ananasH = 60;
     this.genericButtonW = 60, this.genericButtonH = 60;
+    this.fragolaW = 60, this.fragolaH = 60;
 
     /*x velocity elements*/
     this.playerV=180;
@@ -64,7 +66,8 @@
     this.busy_cloud_space=0;
     this.busy_tree_space=0;
     this.button_pausa=0;
-    this.upcount=0;
+    this.upcount = 0;
+     
 
     this.DINO = {
         NORMAL:{value: 0}, 
@@ -87,15 +90,30 @@
 
     this.text = [];
     this.numex = [];
+    this.exitalic = [];
+    this.exword = [];
+    this.exid = [];
+
+    this.actualId;
+    this.isWord = 0;
+    this.isItalic = 0;
+    this.actualText = 0;
+    this.actualIndex=0;
+    
+
     this.choseText=0;
     this.textGroup = 0;
 
+    this.writeWord = 0;
 
     this.posCreate = 0;
     this.nextStep = 0;
-    this.checkmarkbutton=0;
+    this.checkmarkbutton = 0;
+    this.wordIsCompleted = false;
     this.tutorial = true;
 
+    this.outjson = [];
+    this.json=0;
  }
 
 
@@ -509,6 +527,7 @@
               this.lectshape = new Shape(0, 0, this.lectW, this.lectH, 'null');
               this.lectshape.setPosition('top-left');
 
+  
               this.lectshape.setLecter(this.text[this.choseText].charAt(this.firstNotRed(this.text[this.choseText].length)));
            
               this.lectshape.setTextSize(100);
@@ -518,8 +537,15 @@
 
           /*MOMENTANEO COMMENT*/
           //if (Phaser.Math.chanceRoll(80)) {
-             element = this.lects.create(x + total, game.world.height - this.solidH - this.lectH - this.lectH / 2, this.lectshape.bmd);
-             setCommonProperties(element);
+
+          if (this.wordIsCompleted) {
+              element = this.ananases.create(x + total, game.world.height - this.solidH - this.ananasH - this.ananasH / 2, 'ananas');
+          } else {
+              element = this.lects.create(x + total, game.world.height - this.solidH - this.lectH - this.lectH / 2, this.lectshape.bmd);
+          }
+
+          setCommonProperties(element);
+
           //}
 
           /*SOSTITUTO MOMENTANEO*/
@@ -610,7 +636,8 @@
         var xLecter = this.player.position.x + this.playerW - 30;
         var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
 
-        this.isWord = true;
+        //this.isWord = true;
+        this.writeWord = true;
         this.createLecter(xLecter, yLecter);
         ananas.kill();
     }
@@ -693,7 +720,8 @@
         var xLecter = this.player.position.x+this.playerW-30;
         var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
 
-        this.isWord = false;
+        //this.isWord = false;
+        this.writeWord = false;
         this.createLecter(xLecter, yLecter);
         this.lects.getFirstAlive().kill();
     }
@@ -816,7 +844,8 @@
         clear(this.trees,this.treeW);
         clear(this.lects, this.lectW);
         clear(this.ananases, this.ananasW);
-        clear(this.blackbarries,this.blackbarryW);
+        clear(this.blackbarries, this.blackbarryW);
+        clear(this.fragoles, this.fragolaW);
     }
 
     function clear(group,dim){
@@ -883,12 +912,15 @@
         var yLecter = y;
         this.shape = new Shape(xLecter-game.camera.x, yLecter,this.bitmapW,this.bitmapH,game.cache.getImage('fumetto'))
 
-        if (!this.isWord) this.shape.setLecter(this.lectshape.lecter);
-        this.shape.isWord = this.isWord;
+        if (this.isItalic) this.shape.isItalic = true;
+        else this.shape.isItalic = false;
+
+        if (!this.writeWord) this.shape.setLecter(this.lectshape.lecter);
+        this.shape.writeWord = this.writeWord;
         
         /*Adattamento della bitmap a comparsa*/
-        var bitmapMarginW = 150;
-        var bitmapMarginH = 150;
+        var bitmapMarginW = 200;
+        var bitmapMarginH = 200;
         var _g = this.shape.getShapeMaxMin();
         var _c = this.shape.getAbsoluteShapeMaxMin(_g.minX, _g.minY, _g.maxX, _g.maxY);
         this.shape.bitmapW = _g.lenW + bitmapMarginW;
@@ -898,7 +930,8 @@
         /******/
 
         this.lectshape.setPosition('center');
-        this.shape.numex = this.numex[this.choseText];
+        //this.shape.numex = this.numex[this.choseText];
+        this.shape.numex = this.actualIndex;
         this.shape.initializeBitmapData();
         this.lecter=this.lecters.create(xLecter,yLecter,this.shape.bmd);
         this.reservedArea.area.splice(0,1);
@@ -920,26 +953,95 @@
         this.checkmarkbutton.fixedToCamera = true;
     }
 
-    GameState.prototype.confirmShape=function() {
-              if(this.shape){
-                   //if(this.shape._strokes[0].length>10)
-                   var ris=this.shape.checkInputData();
+/**************SALVATAGGIO STATISTICHE******************/
+
+    GameState.prototype.saveStats = function (percent,errorUp,errorDown,dollarNPoint,strokes) {
+     
+
+        var json = [{
+            "id": "",
+            "userId": "",
+            "strokes": [],
+            "matching": percent,
+            "upperBoundExeceed": errorUp,
+            "lowerBoundExeceed": errorDown,
+            "dollarNRating": dollarNPoint
+        }];
+
+        /*for (var i = 0; i < strokes.length; i++) {
+            for (var j = 0; j < strokes[i].length; j++) {
+                json.strokes.push({ strokes[i].X, "y": strokes[i].Y });
+            }
+        }*/
+
+        /*ajax request*/
 
 
-                    if(ris.type==this.lectshape.lecter&&ris.point>2){                      
-                        this.colorSentenceLecter(this.shape.lecter);           
-                    }else{
-                        this.shape.clearInputData();
-                    }
+    }
 
-                    if(this.lecters.countLiving()>0){
-                     this.lecters.getFirstAlive().kill();
-                    }
+/**********************************************/
 
-                    var tmp=this.countRedWord(this.text[this.choseText].length);
-                    if(tmp==this.text[this.choseText].length){
-                       this.generateText();
-                       scoreWord+=1;
+
+
+    GameState.prototype.confirmShape = function () {
+
+                var percent,errorUp,errorDown,dollarNPoint,strokes; 
+        
+                if (this.shape) { 
+                    var ris = this.shape.checkInputData();
+                     percent = ris.percent;
+                     errorUp = ris.errorUp;
+                     errorDown = ris.errorDown;
+                     dollarNPoint = ris.DollarNPoint;
+                     strokes = ris._strokes;
+
+                   if (!this.isWord) {
+                       if (ris.matchPercent > 60) {
+                           scoreWord += 1;
+                           this.generateText();
+                           //this.saveStats(percent, errorUp, errorDown, dollarNPoint, strokes);
+                       } else {
+                           this.shape.clearInputData();
+                       }
+                   }else if (this.isItalic&&this.isWord) {
+                       if (ris.matchPercent > 60) {
+                           this.colorSentenceLecter(this.shape.lecter);
+                       } else {
+                           this.shape.clearInputData();
+                       }
+
+                       var tmp = this.countRedWord(this.text[this.choseText].length);
+                       if (tmp == this.text[this.choseText].length) {
+                           scoreWord += 1;
+                           this.generateText();
+                       } else {
+                           this.shape.clearInputData();
+                       }
+
+                   } else if (this.isWord && this.wordIsCompleted) {
+                       if (ris.matchPercent > 60) {
+                           scoreWord += 1;
+                           this.wordIsCompleted = false;
+                           this.generateText();
+                           //this.saveStats(percent, errorUp, errorDown, dollarNPoint, strokes);
+                       } else {
+                           this.shape.clearInputData();
+                       }
+                   } else if (this.isWord && !this.wordIsCompleted) {
+                       if (ris.type == this.lectshape.lecter && ris.point > 2) {
+                           this.colorSentenceLecter(this.shape.lecter);
+                       } else {
+                           this.shape.clearInputData();
+                       }
+
+                       var tmp = this.countRedWord(this.text[this.choseText].length);
+                       if (tmp == this.text[this.choseText].length) {
+                           this.wordIsCompleted = true;
+                       }
+                   }
+
+                    if (this.lecters.countLiving() > 0) {
+                        this.lecters.getFirstAlive().kill();
                     }
 
                     if(this.player.frame ==0){
@@ -1086,6 +1188,9 @@
     this.ananases = game.add.group();
     this.ananases.enableBody = true;
 
+    this.fragoles = game.add.group();
+    this.fragoles.enableBody = true;
+
     this.textGroup=game.add.group();
 
      this.bananasx2=game.add.group();
@@ -1156,11 +1261,14 @@
        
        var k = 0;
        for (var i = 0; i < JsonObj.exercises.length; i++) {
-           if (JsonObj.exercises[i].isWord === true) {
+           //if (JsonObj.exercises[i].isWord === true) {
                this.text[k] = JsonObj.exercises[i].text.toString();
                this.numex[k] = i;
+               this.exitalic[k] = JsonObj.exercises[i].isItalic;
+               this.exword[k] = JsonObj.exercises[i].isWord;
+               this.exid[k]= JsonObj.exercises[i].id;
                k++;
-           }
+           //}
        }
 
 
@@ -1185,12 +1293,18 @@
 
      game.world.remove(this.textGroup);
 
-
      this.textGroup = game.add.group();
      this.sentenceText = [];
      this.choseText = parseInt((Math.random() * 100) % (this.text.length));
+
+     this.actyalId = this.exid[this.choseText];
+     this.isWord = this.exword[this.choseText];
+     this.actualText = this.text[this.choseText];
+     this.isItalic = this.exitalic[this.choseText];
+     this.actualIndex=this.numex[this.choseText];
+
      var posx = 0;
-     var width = 0;
+     var width = 0
      for (var i = 0; i < this.text[this.choseText].length; i++) {
          if (posx == 0)
              this.sentenceText[i] = game.make.text(w / 2 - this.text[this.choseText].length * 30 / 2, 10, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 1, align: 'left' });
