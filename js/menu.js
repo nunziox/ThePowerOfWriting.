@@ -12,17 +12,24 @@ MenuState.prototype = {
 
     preload : function(){
       
-      this.load.onFileComplete.add(function( progress ) { 
-        if(this.menu_loading_finish==undefined){
-          if(this.num_file_loading==undefined){
-            this.num_file_loading=0;
-            this.loading_status=this.game.add.text(w/2-130, h/2-80,'', { font: '59px Arial', fill: '#FFF' });      //stampo lo score attuale
-          }else if(num_file_loading<55){
-           this.loading_status.text ='Loading: '+progress.toString();
-          }
-          this.num_file_loading++;
-        }
-      });
+        this.load.onFileComplete.add(function (progress) {
+            if(this.menu_loading_finish==undefined){
+              if(this.num_file_loading==undefined){
+                this.num_file_loading=0;
+                  //this.loading_status=this.game.add.text(w/2-130, h/2-80,'', { font: '59px Arial', fill: '#FFF' });
+                this.loading_status = this.game.add.text(w / 2 - 55, 390, '', { font: '59px Arial', fill: '#FFF' });
+              }else if(num_file_loading<55){
+                  //this.loading_status.text ='Loading: '+progress.toString();
+                  this.loading_status.text = progress.toString() + '%';
+              }
+              this.num_file_loading++;
+            }
+        });
+
+        this.loaderEmpty = this.add.sprite(w / 2 - 321 / 2, 300, 'loaderEmpty');
+        this.loaderEmpty.name = 'loaderEmpty';
+        this.preloadBar = this.add.sprite(w / 2 - 321 / 2, 300, 'loaderFull');
+        this.load.setPreloadSprite(this.preloadBar);
 
       this.load.onLoadComplete.add(function( progress ) { 
           this.num_file_loading=0;
@@ -65,7 +72,7 @@ MenuState.prototype = {
       game.load.image('fumetto', 'assets/fumetto.jpg');
       game.load.image('bullet', 'assets/bullet.png');
       game.load.image('life', 'assets/newlife.png');
-      game.load.image('cactus', 'assets/cactus.png');
+      game.load.image('mina', 'assets/mina.png');
       game.load.image('platform', 'assets/platform.png');
       game.load.image('diamond', 'assets/diamond.png');
       game.load.image('cloud', 'assets/cloud.png');
@@ -77,6 +84,8 @@ MenuState.prototype = {
       game.load.image('morared', 'assets/morared.png');
       game.load.image('morablack', 'assets/morablack.png');
       game.load.image('ananas', 'assets/ananas.png');
+      game.load.image('return', 'assets/return.png');
+      game.load.image('gioco', 'assets/giocos.png');
 
       game.load.image('applex2', 'assets/fruitx2.png');
       game.load.image('applex5', 'assets/fruitx5.png');
@@ -104,10 +113,11 @@ MenuState.prototype = {
 
 
     create:  function(){
-      this.button = game.add.button(0,0, 'logo', this.openGame, this, 2, 1, 0);
-      this.button = game.add.button(w-100,20, 'exit', this.openSetting, this, 2, 1, 0);
-      this.button = game.add.button(w-180,35, 'setting', this.openSettingUser, this, 2, 1, 0);
-      this.helpbutton= game.add.button(16,16, 'help', this.openHelp, this, 2, 1, 0);
+      game.add.sprite(0,0,'logo');
+      this.button = game.add.button(525,330, 'gioco', this.openGame, this, 2, 1, 0);
+      //this.button = game.add.button(w-100,20, 'exit', this.openSetting, this, 2, 1, 0);
+      //this.button = game.add.button(w-180,35, 'setting', this.openSettingUser, this, 2, 1, 0);
+      this.helpbutton= game.add.button(w-100,20, 'help', this.openHelp, this, 2, 1, 0);
     ;},
 
 

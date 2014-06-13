@@ -132,17 +132,17 @@ Shape.prototype.getShapeMaxMin = function () {
         for (var i = 0; i < strokes.length; i++) {
             var points = strokes[i].stroke;
             for (var j = 0; j < points.length; j++) {
-                if (i == 0 && j == 0) {
-                    minX[k] = points[j].X;
-                    minY[k] = points[j].Y;
-                    maxX[k] = points[j].X;
-                    maxY[k] = points[j].Y;
+                if (i === 0 && j === 0) {
+                    minX[k] = parseInt(points[j].X);
+                    minY[k] = parseInt(points[j].Y);
+                    maxX[k] = parseInt(points[j].X);
+                    maxY[k] = parseInt(points[j].Y);
                 } else {
                     /*Controllare la pazzia del 99... cose assurde °.°*/
-                    if (minX[k] > points[j].X) { minX[k] = points[j].X; }
-                    if (minY[k] > points[j].Y) { minY[k] = points[j].Y; }
-                    if (maxX[k] < points[j].X) { maxX[k] = points[j].X; }
-                    if (maxY[k] < points[j].Y) { maxY[k] = points[j].Y; }
+                    if (minX[k] > parseInt(points[j].X)) { minX[k] = parseInt(points[j].X); }
+                    if (minY[k] > parseInt(points[j].Y)) { minY[k] = parseInt(points[j].Y); }
+                    if (maxX[k] < parseInt(points[j].X)) { maxX[k] = parseInt(points[j].X); }
+                    if (maxY[k] < parseInt(points[j].Y)) { maxY[k] = parseInt(points[j].Y); }
                 }
             }
         }
@@ -201,7 +201,6 @@ Shape.prototype.writeLecter = function (isSubWord) {
         var symbols = JsonObj.exercises[this.numex].symbols;
         for(var k=0;k<symbols.length;k++){
             if((maxY[k]-minY[k]) > maxYWord) maxYWord=(maxY[k]-minY[k]);
-            if((maxY[k]-minY[k]) > maxYWord) maxYWord=(maxY[k]-minY[k]);
         }
 
         _g = this.getAbsoluteShapeMaxMin(minX, minY, maxX, maxY);
@@ -215,46 +214,45 @@ Shape.prototype.writeLecter = function (isSubWord) {
         var stroke;
 
 
-                var indexWord = 0;
+        var indexWord = 0;
 
-                strokes_ = [];
-                for(var index=0;index<symbols.length;index++){
-                      offset=0;
-                      if(index>0){
-                        lastSpace+=(maxX[index-1]-minX[index-1])+margin;
-                      }
-                    
-   
-                      var strokes = symbols[index].strokes;
-                      for (var i = 0; i < strokes.length; i++) {
-                          var points = strokes[i].stroke;
-                          stroke = [];
-                          for (var j = 0; j < points.length ; j++) {
-                              if (j === 0) {
-                                  if (isSubWord && symbols[index].symbol == this.lecter) {
-                                      this.bmd.context.moveTo(points[j].X - minX[index] + this.bitmapW / 2 - (maxX[index] - minX[index]) / 2, points[j].Y - minY[index] + this.bitmapH / 2 -(maxY[index] - minY[index]) / 2);
-                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
-                                  } else if (!isSubWord) {
-                                      this.bmd.context.moveTo(points[j].X - minX[index] + lastSpace + this.bitmapW / 2 - lenW / 2, points[j].Y - minY[index] + this.bitmapH / 2 - maxYWord / 2);
-                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
-                                  }
-                              } else {
-                                  if (isSubWord && symbols[index].symbol == this.lecter) {
-                                      this.bmd.context.lineTo(points[j].X - minX[index] + this.bitmapW / 2 - (maxX[index] - minX[index]) / 2, points[j].Y - minY[index] + this.bitmapH / 2 - (maxY[index] - minY[index]) / 2);
-                                      indexWord = index;
-                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
-                                  } else if (!isSubWord) {
-                                      this.bmd.context.lineTo(points[j].X - minX[index] + lastSpace + this.bitmapW / 2 - lenW / 2, points[j].Y - minY[index] + this.bitmapH / 2 - maxYWord / 2);
-                                      stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
-                                  }
-                              }
-                          }
-                          if (isSubWord && symbols[index].symbol == this.lecter) strokes_[strokes_.length] = stroke;
-                      }
-                      this.bmd.context.strokeStyle = '#ff0000';
-                      this.bmd.context.stroke();
-                  
+        strokes_ = [];
+
+        for(var index=0;index<symbols.length;index++){
+            offset = 0;
+            if(index>0){
+                lastSpace+=(maxX[index-1]-minX[index-1])+margin;
+            }
+            var strokes = symbols[index].strokes;
+            for (var i = 0; i < strokes.length; i++) {
+                var points = strokes[i].stroke;
+                stroke = [];
+                for (var j = 0; j < points.length ; j++) {
+                    if (j === 0) {
+                        if (isSubWord && symbols[index].symbol == this.lecter) {
+                            this.bmd.context.moveTo(parseInt(points[j].X) - minX[index] + this.bitmapW / 2 - (maxX[index] - minX[index]) / 2, parseInt(points[j].Y) - minY[index] + this.bitmapH / 2 -(maxY[index] - minY[index]) / 2);
+                            stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
+                        } else if (!isSubWord) {
+                            this.bmd.context.moveTo(parseInt(points[j].X) - minX[index] + lastSpace + this.bitmapW / 2 - lenW / 2, parseInt(points[j].Y) - minY[index] + this.bitmapH / 2 - maxYWord / 2);
+                            stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
+                        }
+                    } else {
+                        if (isSubWord && symbols[index].symbol == this.lecter) {
+                            this.bmd.context.lineTo(parseInt(points[j].X) - minX[index] + this.bitmapW / 2 - (maxX[index] - minX[index]) / 2, parseInt(points[j].Y) - minY[index] + this.bitmapH / 2 - (maxY[index] - minY[index]) / 2);
+                            indexWord = index;
+                            stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
+                        } else if (!isSubWord) {
+                            this.bmd.context.lineTo(parseInt(points[j].X) - minX[index] + lastSpace + this.bitmapW / 2 - lenW / 2, parseInt(points[j].Y) - minY[index] + this.bitmapH / 2 - maxYWord / 2);
+                            stroke[stroke.length]=new Point(parseInt(points[j].X),parseInt(points[j].Y));
+                        }
+                    }
                 }
+                if (isSubWord && symbols[index].symbol == this.lecter) strokes_[strokes_.length] = stroke;
+            }
+            this.bmd.context.strokeStyle = '#ff0000';
+            this.bmd.context.stroke();
+                  
+        }
 
          
 
@@ -266,14 +264,11 @@ Shape.prototype.writeLecter = function (isSubWord) {
                 /*Inseriamo le righe*/
                 if (isSubWord) lenW = (maxX[indexWord] - minX[indexWord]);
 
-                if (!this.isItalic) {
                     this.upperBound = this.bitmapH / 2 - maxYWord / 2;
-                    this.lowerBound = maxWordY - minWordY + this.bitmapH / 2 - maxYWord / 2;
+                    this.lowerBound = maxYWord/2 + this.bitmapH / 2;
                     var x0 = this.bitmapW / 2 - lenW / 2;
                     this.bmd.context.fillRect(x0 - 10, this.upperBound - this.marginLine, lenW + 20, 2);
-                    this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, lenW + 20, 2);
-                }
-           
+                    this.bmd.context.fillRect(x0 - 10, this.lowerBound + this.marginLine, lenW + 20, 2);           
 
          }
 }
@@ -409,7 +404,7 @@ Shape.prototype.checkInputData = function () {
     var result;
     if (this.writeWord == false && this._strokes.length > 0) {
         result = this._r.Recognize(this._strokes, 0, 0, 1);
-        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": this.round(result.Score, 2), "type": result.Name };
+        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": this.round(result.Score, 2), "type": result.Name, "strokes": this._strokes };
         alert("Percentuale: " + percent + ", ErrorUp: " + errorUp + ", ErrorDown:" + errorDown + ", DollarNPoint:" + this.round(result.Score, 2)+", type: " + result.Name);
     } else if (this.writeWord) {
         res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": 'null', "type": 'null', "strokes": this._strokes };

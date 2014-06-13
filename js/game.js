@@ -38,7 +38,7 @@
     this.solidH = 100,this.solidW = 100;
     this.bitmapW=250,this.bitmapH=250;
     this.platformW=400,this.platformH=64;
-    this.cactusW=80,this.cactusH=120;
+    this.minaW=80,this.minaH=120;
     this.medicalW=32,this.medicalH=32;
     this.diamondW=32,this.diamondH=32;
     this.shelfW=400,this.shelfH=32;
@@ -83,16 +83,11 @@
 
     this.score = 0,this.scoreText=0;
     this.scoreBanana=0,this.scoreTextBanana=0;
-    this.scoreCiliege=0,this.scoreTextCiliege=0;
+    this.scoreCiliege = 0, this.scoreTextCiliege = 0;
+    this.scoreRecord = 0;
     this.sentenceText={};
     this.reservedArea = { area: [] };
     this.dictionary = {};
-
-    this.text = [];
-    this.numex = [];
-    this.exitalic = [];
-    this.exword = [];
-    this.exid = [];
 
     this.actualId;
     this.isWord = 0;
@@ -113,7 +108,8 @@
     this.tutorial = true;
 
     this.outjson = [];
-    this.json=0;
+    this.json = 0;
+    this.traceSymbol = 0;
  }
 
 
@@ -152,7 +148,7 @@
 
         game.physics.arcade.collide(this.stars,this.platforms);
         game.physics.arcade.overlap(this.player, this.stars, this.collectStar, null, this); /* se c'è un overlap tra  players e stars viene invocato il metodo collectStar*/
-        game.physics.arcade.overlap(this.player, this.cactuses,this.matchCactus, null, this);    
+        game.physics.arcade.overlap(this.player, this.minaes,this.matchmina, null, this);    
         game.physics.arcade.overlap(this.player, this.diamonds,this.matchDiamond, null, this);  
         game.physics.arcade.overlap(this.player, this.lects,this.matchLect, null, this);
         game.physics.arcade.overlap(this.player, this.diamonds,this.matchDiamond, null, this);
@@ -251,18 +247,19 @@
         if (onSwipeUp() && this.player.body.touching.down) {
             if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU||this.dino_state==this.DINO.SUPERMAN){
              this.player.body.velocity.y = -700;   
-             this.player.body.velocity.x=this.playerV;
             }
         }
 
 
         if (onSwipeRight()) {                                                      //Controllo se l'utente fa uno Swap a destra
-            if(this.dino_state==this.DINO.NORMAL||this.dino_state==this.DINO.SUPERBLU){
+            if (this.dino_state == this.DINO.NORMAL || this.dino_state == this.DINO.SUPERBLU || this.dino_state == this.DINO.SUPERMAN) {
                 this.player.body.velocity.x = this.playerV;   
                 if(this.dino_state==this.DINO.NORMAL){                                       
                  this.player.animations.play('right');
                 }else if(this.dino_state==this.DINO.SUPERMAN){
                   this.player.animations.play('superman');
+                } else if (this.dino_state == this.DINO.SUPERBLU) {
+                    this.player.animations.play('ice');
                 }
             }
         }
@@ -275,7 +272,7 @@
 
            if(this.gturn==1){
 
-             if(this.dino_state!=this.DINO.WRITER){
+               if (this.dino_state != this.DINO.WRITER && this.player.body.velocity.x != 0) {
                     var res=this.gesture.checkInputData();
                     if(res.type=='null'){
                         if(this.player.body.touching.down) {
@@ -336,12 +333,20 @@
 
         this.background.position.x = -game.camera.x; //aggiorno la posizione del background
         this.clearAll();
-      
+
+        if (this.player.body.velocity.x == 0) {
+            if (this.dino_state == this.DINO.NORMAL)
+                this.player.animations.stop(0);
+            else if (this.dino_state == this.DINO.SUPERBLU)
+                this.player.animations.stop(3);
+            else if (this.dino_state == this.DINO.SUPERMAN)
+                this.player.animations.stop(7);
+        }
     
     ;},
 
     shutdown : function(){
-       this.clearShutdown();
+      this.clearShutdown();
     ;}
 
 }
@@ -513,9 +518,9 @@
           }
 
           if (Phaser.Math.chanceRoll(50)) {
-              element = this.cactuses.create(x + total + unit, game.world.height - this.solidH - this.cactusH, 'cactus');
+              element = this.minaes.create(x + total + unit, game.world.height - this.solidH - this.minaH, 'mina');
               setCommonProperties(element);
-              total += this.cactusW + unit;
+              total += this.minaW + unit;
           }
 
           total += unit * 10;
@@ -528,7 +533,7 @@
               this.lectshape.setPosition('top-left');
 
   
-              this.lectshape.setLecter(this.text[this.choseText].charAt(this.firstNotRed(this.text[this.choseText].length)));
+              this.lectshape.setLecter(text[this.choseText].charAt(this.firstNotRed(text[this.choseText].length)));
            
               this.lectshape.setTextSize(100);
               this.lectshape.initializeBitmapData();
@@ -577,7 +582,7 @@
         }
    
    GameState.prototype.colorSentenceLecter= function(lecter){
-     for(var i=0;i<this.text[this.choseText].length;i++){
+     for(var i=0;i<text[this.choseText].length;i++){
       if(this.sentenceText[i].text==lecter&&this.sentenceText[i].fill!='#FF0000'){
        this.sentenceText[i].fill='#FF0000';
        this.sentenceText[i].stroke='#FF0000';
@@ -726,7 +731,7 @@
         this.lects.getFirstAlive().kill();
     }
 
-    GameState.prototype.matchCactus = function () {
+    GameState.prototype.matchmina = function () {
         /*var repeat = true;
         while (repeat) {
             var wordRand = Math.round(Math.random() * JsonObj.exercises.length - 1);
@@ -743,8 +748,12 @@
         var xWord = this.player.position.x + this.playerW - 30;
         var yWord = game.world.height - this.bitmapH - this.solidH - this.enemyH - this.player.position.y;
         this.createWord(xWord, yWord, word);*/
-     this.decreseLife();
-     this.cactuses.getFirstAlive().kill();
+        this.decreseLife();
+        this.effect_sound.play('boom');
+        var x = this.minaes.getFirstAlive().position.x;
+        var y = this.minaes.getFirstAlive().position.y;
+        this.minaes.getFirstAlive().kill();
+        this.createBoom(x, y);
     }
      
     GameState.prototype.matchFruit=function(player,fruit){
@@ -791,7 +800,7 @@
         clearS(this.shelves);
         clearS(this.enemies);
         clearS(this.explosions);
-        clearS(this.cactuses);
+        clearS(this.minaes);
         clearS(this.clouds);
         clearS(this.bananas);
         clearS(this.cilieges);
@@ -837,7 +846,7 @@
         clear(this.shelves,this.shelfW);
         clear(this.enemies,this.enemyW);
         clear(this.explosions,0);
-        clear(this.cactuses,this.cactusW);
+        clear(this.minaes,this.minaW);
         clear(this.clouds,this.cloudW);
         clear(this.bananas,this.bananaW);
         clear(this.cilieges,this.ciliegeW);
@@ -910,35 +919,50 @@
     GameState.prototype.createLecter=function(x, y) {
         var xLecter = x;
         var yLecter = y;
-        this.shape = new Shape(xLecter-game.camera.x, yLecter,this.bitmapW,this.bitmapH,game.cache.getImage('fumetto'))
 
+        this.shape = new Shape(xLecter - game.camera.x, yLecter, this.bitmapW, this.bitmapH, game.cache.getImage('fumetto'))
         if (this.isItalic) this.shape.isItalic = true;
         else this.shape.isItalic = false;
-
         if (!this.writeWord) this.shape.setLecter(this.lectshape.lecter);
         this.shape.writeWord = this.writeWord;
+        this.shape.numex = this.actualIndex;
         
-        /*Adattamento della bitmap a comparsa*/
-        var bitmapMarginW = 200;
-        var bitmapMarginH = 200;
-        var _g = this.shape.getShapeMaxMin();
-        var _c = this.shape.getAbsoluteShapeMaxMin(_g.minX, _g.minY, _g.maxX, _g.maxY);
-        this.shape.bitmapW = _g.lenW + bitmapMarginW;
-        this.shape.bitmapH = (_c.maxWordY - _c.minWordY) + bitmapMarginH;
-        this.bitmapW = this.shape.bitmapW;
-        this.bitmapH = this.shape.bitmapH;
-        /******/
+        if (this.writeWord) {
+            var bitmapMarginW = 200;
+            var bitmapMarginH = 200;
+
+            var _g = this.shape.getShapeMaxMin();
+            var _c = this.shape.getAbsoluteShapeMaxMin(_g.minX, _g.minY, _g.maxX, _g.maxY);
+            this.shape.bitmapW = _g.lenW + bitmapMarginW;
+            //this.bitmapH = (_c.maxWordY - _c.minWordY) + bitmapMarginH;
+            //this.shape.posY = this.shape.posY + this.bitmapH - this.shape.bitmapH - 900;
+            //this.bitmapW = this.shape.bitmapW;
+            //this.bitmapH = this.shape.bitmapH;
+        }
+
+        
+
+        //var xLecter = this.player.position.x + this.playerW - 30;
+        //var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
+
+
+
 
         this.lectshape.setPosition('center');
-        //this.shape.numex = this.numex[this.choseText];
-        this.shape.numex = this.actualIndex;
         this.shape.initializeBitmapData();
         this.lecter=this.lecters.create(xLecter,yLecter,this.shape.bmd);
         this.reservedArea.area.splice(0,1);
-        this.reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + this.bitmapW, "y_": yLecter + this.bitmapH, "posX": xLecter });
-        this.checkmarkbutton = game.add.button((xLecter - game.camera.x) + this.bitmapW, yLecter + this.bitmapH-this.genericButtonH, 'checkmark', this.confirmShape, this, 0, 0, 0);
-        this.checkmarkbutton.fixedToCamera=true;
-    }
+        this.reservedArea.area.push({ "x": xLecter, "y": yLecter, "x_": xLecter + this.shape.bitmapW, "y_": yLecter + this.bitmapH, "posX": xLecter });
+        this.checkmarkbutton = game.add.button((xLecter - game.camera.x) + this.shape.bitmapW, yLecter + this.bitmapH - this.genericButtonH, 'checkmark', this.confirmShape, this, 0, 0, 0);
+        this.checkmarkbutton.fixedToCamera = true;
+        if (this.writeWord) {
+            //this.bitmapH = 250;
+            //this.bitmapW = 250;
+            this.writeWord = false;
+            this.shape.writeWord = this.writeWord;
+        }
+            
+        }
 
     GameState.prototype.createWord = function (x, y, word) {
         var xWord = x;
@@ -955,28 +979,57 @@
 
 /**************SALVATAGGIO STATISTICHE******************/
 
-    GameState.prototype.saveStats = function (percent,errorUp,errorDown,dollarNPoint,strokes) {
+    GameState.prototype.saveStats = function (id,percent,errorUp,errorDown,dollarNPoint,symbol,strokes) {
      
 
-        var json = [{
-            "id": "",
+        var json = {
+            "id": id,
             "userId": "",
-            "strokes": [],
             "matching": percent,
             "upperBoundExeceed": errorUp,
             "lowerBoundExeceed": errorDown,
-            "dollarNRating": dollarNPoint
-        }];
+            "dollarNRating": dollarNPoint,
+            "symbols": [
+              {
+                  "symbol": "",
+                  "strokes": []
+              }
+            ]
+        };
 
-        /*for (var i = 0; i < strokes.length; i++) {
-            for (var j = 0; j < strokes[i].length; j++) {
-                json.strokes.push({ strokes[i].X, "y": strokes[i].Y });
+        if (this.isWord && this.wordIsCompleted) {
+            for (var k = 0; k < symbol.length; k++) {
+                json.symbols[k].symbol = symbol[k];
+                var dimStrokes = JsonObj.exercises[this.choseText].symbols[k].strokes.length;
+                for (var i = 0; i < dimStrokes; i++) {
+                    var array = [];
+                    var dimStroke = JsonObj.exercises[this.choseText].symbols[k].strokes[i].length;
+                    for (var j = 0; j < dimStroke; j++) {
+                        array[j] = ({ "X": strokes[i][j].X, "Y": strokes[i][j].Y });
+                    }
+                    json.symbols[k].strokes.push({ "stroke": array });
+                }
             }
-        }*/
+        } else {
+            json.symbols[0].symbol = symbol;
+            for (var i = 0; i < strokes.length; i++) {
+                var array = [];
+                for (var j = 0; j < strokes[i].length; j++) {
+                    array[j] = ({ "X": strokes[i][j].X, "Y": strokes[i][j].Y });
+                }
+                json.symbols[0].strokes.push({ "stroke": array });
+            }
+        }/*
 
-        /*ajax request*/
+        var requestNumber = JSONRequest.post("127.0.0.1/ThePowerOfWriting", json,
+            function (requestNumber, value, exception) {
+                if (value) {
 
+                } else {
 
+                }
+            });
+            */
     }
 
 /**********************************************/
@@ -989,29 +1042,33 @@
         
                 if (this.shape) { 
                     var ris = this.shape.checkInputData();
-                     percent = ris.percent;
+                    percent = ris.matchPercent;
                      errorUp = ris.errorUp;
                      errorDown = ris.errorDown;
-                     dollarNPoint = ris.DollarNPoint;
-                     strokes = ris._strokes;
+                     dollarNPoint = ris.point;
+                     strokes = ris.strokes;
 
-                   if (!this.isWord) {
-                       if (ris.matchPercent > 60) {
+                     if (!this.isWord) {
+                         if (ris.matchPercent > 60) {
                            scoreWord += 1;
+                           var symbol = JsonObj.exercises[this.choseText].symbols[0].symbol;
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
                            this.generateText();
-                           //this.saveStats(percent, errorUp, errorDown, dollarNPoint, strokes);
                        } else {
                            this.shape.clearInputData();
                        }
-                   }else if (this.isItalic&&this.isWord) {
+                   }else if (this.isItalic && this.isWord) {
                        if (ris.matchPercent > 60) {
+                           var symbol = JsonObj.exercises[this.choseText].symbols[this.traceSymbol].symbol;
+                           this.traceSymbol++;
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
                            this.colorSentenceLecter(this.shape.lecter);
                        } else {
                            this.shape.clearInputData();
                        }
 
-                       var tmp = this.countRedWord(this.text[this.choseText].length);
-                       if (tmp == this.text[this.choseText].length) {
+                       var tmp = this.countRedWord(text[this.choseText].length);
+                       if (tmp == text[this.choseText].length) {
                            scoreWord += 1;
                            this.generateText();
                        } else {
@@ -1020,22 +1077,29 @@
 
                    } else if (this.isWord && this.wordIsCompleted) {
                        if (ris.matchPercent > 60) {
+                           this.traceSymbol = 0;
                            scoreWord += 1;
                            this.wordIsCompleted = false;
                            this.generateText();
-                           //this.saveStats(percent, errorUp, errorDown, dollarNPoint, strokes);
+                           var symbol = [];
+                           for (var i = 0; i < JsonObj.exercises[this.choseText].symbols.length[i]; i++)
+                               symbol[i] = JsonObj.exercises[this.choseText].symbols[i].symbol;
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
                        } else {
                            this.shape.clearInputData();
                        }
                    } else if (this.isWord && !this.wordIsCompleted) {
                        if (ris.type == this.lectshape.lecter && ris.point > 2) {
+                           var symbol = JsonObj.exercises[this.choseText].symbols[this.traceSymbol].symbol;
+                           this.traceSymbol++;
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
                            this.colorSentenceLecter(this.shape.lecter);
                        } else {
                            this.shape.clearInputData();
                        }
 
-                       var tmp = this.countRedWord(this.text[this.choseText].length);
-                       if (tmp == this.text[this.choseText].length) {
+                       var tmp = this.countRedWord(text[this.choseText].length);
+                       if (tmp == text[this.choseText].length) {
                            this.wordIsCompleted = true;
                        }
                    }
@@ -1093,7 +1157,7 @@
         game.load.image('fumetto', 'assets/fumetto.jpg');
         game.load.image('bullet', 'assets/bullet.png');
         game.load.image('life', 'assets/newlife.png');
-        game.load.image('cactus', 'assets/cactus.png');
+        game.load.image('mina', 'assets/mina.png');
         game.load.image('platform', 'assets/platform.png');
         game.load.image('platform', 'assets/platform.png');
         game.load.image('diamond', 'assets/diamond.png');
@@ -1155,8 +1219,8 @@
     this.explosions = game.add.group();
     this.explosions.enableBody = true;
 
-    this.cactuses =game.add.group();
-    this.cactuses.enableBody = true;
+    this.minaes =game.add.group();
+    this.minaes.enableBody = true;
 
     this.medicals =game.add.group();
     this.medicals.enableBody = true;
@@ -1258,24 +1322,13 @@
 
        this.scoreTextCiliege = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreTextCiliege.fixedToCamera = true;
-       
-       var k = 0;
-       for (var i = 0; i < JsonObj.exercises.length; i++) {
-           //if (JsonObj.exercises[i].isWord === true) {
-               this.text[k] = JsonObj.exercises[i].text.toString();
-               this.numex[k] = i;
-               this.exitalic[k] = JsonObj.exercises[i].isItalic;
-               this.exword[k] = JsonObj.exercises[i].isWord;
-               this.exid[k]= JsonObj.exercises[i].id;
-               k++;
-           //}
-       }
 
-
+       this.scoreRecord = game.add.text(10, game.world.height - this.solidH/2, 'Record: ' + localStorage.getItem("Record"), { fontSize: '200 px', fill: '#000' });
+       this.scoreRecord.fixedToCamera = true;
       /*
-       this.text[0]="PINI";
-       this.text[1]="TINTI"
-       this.text[2]='DINI';
+       text[0]="PINI";
+       text[1]="TINTI"
+       text[2]='DINI';
        */
 
        this.generateText();
@@ -1295,21 +1348,21 @@
 
      this.textGroup = game.add.group();
      this.sentenceText = [];
-     this.choseText = parseInt((Math.random() * 100) % (this.text.length));
+     this.choseText = parseInt((Math.random() * 100) % (text.length));
 
-     this.actyalId = this.exid[this.choseText];
-     this.isWord = this.exword[this.choseText];
-     this.actualText = this.text[this.choseText];
-     this.isItalic = this.exitalic[this.choseText];
-     this.actualIndex=this.numex[this.choseText];
+     this.actualId = exid[this.choseText];
+     this.isWord = exword[this.choseText];
+     this.actualText = text[this.choseText];
+     this.isItalic = exitalic[this.choseText];
+     this.actualIndex=numex[this.choseText];
 
      var posx = 0;
      var width = 0
-     for (var i = 0; i < this.text[this.choseText].length; i++) {
+     for (var i = 0; i < text[this.choseText].length; i++) {
          if (posx == 0)
-             this.sentenceText[i] = game.make.text(w / 2 - this.text[this.choseText].length * 30 / 2, 10, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 1, align: 'left' });
+             this.sentenceText[i] = game.make.text(w / 2 - text[this.choseText].length * 30 / 2, 10, text[this.choseText].charAt(i), { font: '50px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 5, align: 'left'});
          else
-             this.sentenceText[i] = game.make.text(posx + width, 10, this.text[this.choseText].charAt(i), { font: '40px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 1, align: 'left' });
+             this.sentenceText[i] = game.make.text(posx + width, 10, text[this.choseText].charAt(i), { font: '50px Verdana', fill: '#FFF', stroke: "black", strokeThickness: 5, align: 'left'});
          posx = this.sentenceText[i].x;
          width = this.sentenceText[i].width;
          this.sentenceText[i].fixedToCamera = true;
@@ -1329,7 +1382,7 @@
        this.player.animations.add('ice', [3,4,5], 10, true);                             
        this.player.animations.add('right', [0,1,2], 10, true);
        this.player.animations.add('cloud', [6], 10, true);
-       this.player.animations.add('superman', [7,8,9], 10, true);      
+       this.player.animations.add('superman', [7, 8, 9], 10, true);
 
        this.enemies.callAll('animations.add', 'animations', 'left', [1], 10, true);   
        this.enemies.callAll('animations.add', 'animations', 'right', [0], 10, true);

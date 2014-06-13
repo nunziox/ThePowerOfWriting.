@@ -9,32 +9,14 @@ OverState.prototype = {
 
     preload : function(){
 
-       /*this.load.onFileComplete.add(function( progress ) { 
-        if(this.over_loading_finish==undefined){
-          if(this.num_file_loading==0){
-            this.num_file_loading=0;
-            this.loading_status=this.game.add.text(w/2-130, h/2-80,'', { font: '59px Arial', fill: '#FFF' });      //stampo lo score attuale
-          }else if(num_file_loading<1){
-           this.loading_status.text ='Loading'+progress.toString();
-          }
-          this.num_file_loading++;
-        }
-      });
-
-      this.load.onLoadComplete.add(function( progress ) { 
-          this.num_file_loading=0;
-          this.over_loading_finish=true;
-      });*/
-
-
-       //game.load.image('finish', 'assets/finish.png');
     ;},
 
 
     create:  function(){
         var record=0;
 
-        this.button = game.add.button(0,0, 'finish', this.openGame, this, 2, 1, 0);
+        game.add.sprite(0,0,'finish');
+        this.button = game.add.button(w-200,16, 'return', this.openGame, this, 2, 1, 0);
 
         game.add.text(200,58, scoreApple,{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});
         game.add.text(200,150, scoreBanana,{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});

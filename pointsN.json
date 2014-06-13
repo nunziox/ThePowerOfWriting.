@@ -1,10 +1,10 @@
 {
   "exercises": [
     {
-      "id": 0,
+      "id": "0",
       "text": "T",
-      "upperBound": 5,
-      "lowerBound": 89,
+      "upperBound": "5",
+      "lowerBound": "89",
       "symbols": [
         {
           "symbol": "T",
@@ -39,12 +39,12 @@
       "isWord": false,
       "isItalic": false,
       "ratio": "16:9"
-    },   
+    },
     {
-      "id": 1,
+      "id": "1",
       "text": "e",
-      "upperBound": 5,
-      "lowerBound": 89,
+      "upperBound": "142",
+      "lowerBound": "220",
       "symbols": [
         {
           "symbol": "e",
@@ -59,42 +59,41 @@
                   "X": "10",
                   "Y": "220"
                 },
-		{
+                {
                   "X": "26",
                   "Y": "216"
                 },
-		{
+                {
                   "X": "48",
                   "Y": "199"
                 },
-		{
+                {
                   "X": "68",
                   "Y": "168"
                 },
-		{
+                {
                   "X": "68",
                   "Y": "142"
                 },
-		{
+                {
                   "X": "45",
                   "Y": "145"
                 },
-	        {
+                {
                   "X": "44",
                   "Y": "199"
                 },
- 		{
+                {
                   "X": "96",
                   "Y": "219"
                 },
-		{
+                {
                   "X": "120",
                   "Y": "211"
                 }
               ]
             }
           ]
-
         }
       ],
       "isWord": false,
@@ -102,10 +101,10 @@
       "ratio": "16:9"
     },
     {
-      "id": 2,
+      "id": "2",
       "text": "I",
-      "upperBound": 147,
-      "lowerBound": 223,
+      "upperBound": "147",
+      "lowerBound": "223",
       "symbols": [
         {
           "symbol": "I",
@@ -154,10 +153,10 @@
       "ratio": "16:9"
     },
     {
-      "id": 3,
+      "id": "3",
       "text": "PINI",
-      "upperBound": 5,
-      "lowerBound": 89,
+      "upperBound": "5",
+      "lowerBound": "89",
       "symbols": [
         {
           "symbol": "P",
@@ -263,8 +262,8 @@
               ]
             }
           ]
-        }, 
-	{
+        },
+        {
           "symbol": "I",
           "strokes": [
             {
@@ -346,7 +345,7 @@
             }
           ]
         },
-	{
+        {
           "symbol": "I",
           "strokes": [
             {
@@ -393,10 +392,10 @@
       "ratio": "16:9"
     },
     {
-      "id": 4,
+      "id": "4",
       "text": "DINI",
-      "upperBound": 6,
-      "lowerBound": 88,
+      "upperBound": "6",
+      "lowerBound": "88",
       "symbols": [
         {
           "symbol": "D",
@@ -514,7 +513,8 @@
               ]
             }
           ]
-        },	{
+        },
+        {
           "symbol": "I",
           "strokes": [
             {
@@ -596,7 +596,7 @@
             }
           ]
         },
-	{
+        {
           "symbol": "I",
           "strokes": [
             {
@@ -645,8 +645,8 @@
     {
       "id": 5,
       "text": "TINTI",
-      "upperBound": 5,
-      "lowerBound": 89,
+      "upperBound": "5",
+      "lowerBound": "89",
       "symbols": [
         {
           "symbol": "T",
@@ -759,7 +759,7 @@
             }
           ]
         },
-	{
+        {
           "symbol": "T",
           "strokes": [
             {
@@ -837,8 +837,8 @@
     {
       "id": 6,
       "text": "tinti",
-      "upperBound": 5,
-      "lowerBound": 89,
+      "upperBound": "5",
+      "lowerBound": "89",
       "symbols": [
         {
           "symbol": "t",
@@ -951,7 +951,7 @@
             }
           ]
         },
-	{
+        {
           "symbol": "t",
           "strokes": [
             {
