@@ -1321,11 +1321,13 @@
        this.scoreTextCiliege = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreTextCiliege.fixedToCamera = true;
 
+       var  element=game.add.image(10,game.world.height -80,'coppa_small');
        if (localStorage.getItem("Record") != null) {
-           this.scoreRecord = game.add.text(10, game.world.height - this.solidH / 2, 'Record: ' + localStorage.getItem("Record"), { fontSize: '200 px', fill: '#000' });
+          this.scoreRecord = game.add.text(70, game.world.height - this.solidH / 2-13, 'RECORD: ' + localStorage.getItem("Record"), { fontSize: '200 px', fill: '#000' });
        } else {
-           this.scoreRecord = game.add.text(10, game.world.height - this.solidH / 2, 'Record: ' + '0', { fontSize: '200 px', fill: '#000' });
+          this.scoreRecord = game.add.text(70, game.world.height - this.solidH / 2-13, 'RECORD: ' + '0', { fontSize: '200 px', fill: '#000' });
        }
+       element.fixedToCamera=true;
        this.scoreRecord.fixedToCamera = true;
       /*
        text[0]="PINI";

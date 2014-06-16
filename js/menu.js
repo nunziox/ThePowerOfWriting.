@@ -93,6 +93,7 @@ MenuState.prototype = {
       game.load.image('bananax5', 'assets/bananax5.png');
       game.load.image('ciliegex2', 'assets/ciliegex2.png');
       game.load.image('ciliegex5', 'assets/ciliegex5.png');
+      game.load.image('coppa_small', 'assets/coppa_small.png');
 
       game.load.image('exitgame', 'assets/exitgame.png');
       game.load.spritesheet('playstop', 'assets/stop.png',60,60);
