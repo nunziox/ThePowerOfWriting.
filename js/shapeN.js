@@ -279,7 +279,6 @@ Shape.prototype.captureInputData = function () {
     
     this.bmd.context.fillStyle = '#000000';
 
-
     this.current.x =  Math.round(game.input.activePointer.position.x - this.posX);
     this.current.y = Math.round(game.input.activePointer.position.y - this.posY);
 
@@ -404,10 +403,10 @@ Shape.prototype.checkInputData = function () {
     var result;
     if (this.writeWord == false && this._strokes.length > 0) {
         result = this._r.Recognize(this._strokes, 0, 0, 1);
-        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": this.round(result.Score, 2), "type": result.Name, "strokes": this._strokes };
+        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "totalPoint": this.totalCountedPoint, "point": this.round(result.Score, 2), "type": result.Name, "strokes": this._strokes };
         alert("Percentuale: " + percent + ", ErrorUp: " + errorUp + ", ErrorDown:" + errorDown + ", DollarNPoint:" + this.round(result.Score, 2)+", type: " + result.Name);
     } else if (this.writeWord) {
-        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "point": 'null', "type": 'null', "strokes": this._strokes };
+        res = { "matchPercent": percent, "errorUp": errorUp / this.totalCountedPoint, "errorDown": errorDown / this.totalCountedPoint, "totalPoint": this.totalCountedPoint, "point": 'null', "type": 'null', "strokes": this._strokes };
     }
     point = 0;
 

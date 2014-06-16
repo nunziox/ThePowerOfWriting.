@@ -26,13 +26,15 @@ OverState.prototype = {
 
         game.add.text(850,600,point,{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});
 
-        if(point>localStorage.getItem("Record")){
-         localStorage.setItem("Record",point);
-         var record_label=game.add.text(970,700,point,{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});
-         record_label.fill='red';
-        }else{
-         var record_label=game.add.text(970,700,localStorage.getItem("Record"),{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});
-         record_label.fill='red';
+        if (point > localStorage.getItem("Record")) {
+            game.add.sprite(880, 190, 'coppa');
+            localStorage.setItem("Record",point);
+            var record_label=game.add.text(970,700,point,{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});
+            record_label.fill='red';
+        } else {
+            game.add.sprite(880, 190, 'medaglia');
+            var record_label=game.add.text(970,700,localStorage.getItem("Record"),{font: "59px Comic Sans MS",fill: '#FFF',stroke: "black", strokeThickness: 10});
+            record_label.fill='red';
         }
 
      

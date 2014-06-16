@@ -106,8 +106,10 @@ MenuState.prototype = {
       game.load.audio('effect_sound', 'assets/effect_sound.mp3');
 
 
-      /*parte relativa al finish*/
-       game.load.image('finish', 'assets/finish.png');
+        /*parte relativa al finish*/
+      game.load.image('medaglia', 'assets/medaglia.png');
+      game.load.image('coppa', 'assets/coppa.png');
+      game.load.image('finish', 'assets/finish.png');
 
     ;},
 

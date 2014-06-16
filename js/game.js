@@ -3,7 +3,6 @@
  var scoreCiliege=0;
  var scoreWord=0;
 
-
  function GameState(){
     /*groups and sprite*/
     this.platforms=0,this.ground=0;
@@ -55,7 +54,8 @@
     this.fragolaW = 60, this.fragolaH = 60;
 
     /*x velocity elements*/
-    this.playerV=180;
+    this.playerV = 180;
+    this.plusVelocity = true;
     this.enemyV=60;
 
     /*state variable*/
@@ -171,7 +171,7 @@
         var rand=Math.random()*100;
        
         
-        if (game.camera.x + w > this.busy_fruit_space && this.nextStep === 0) {
+        if (this.player.body.position.x > this.busy_fruit_space && this.nextStep === 0) {
             var num_mele = rand % 40;
             var num_banana = rand % 25;
             var num_ciliegie = rand % 10;
@@ -230,8 +230,7 @@
                     this.gturn= this.gesture.captureInputData();
                 } 
         } 
-   
-   
+
         var tmp=updateTimer();
         if(tmp>=(this.start_time+15)){
             this.player.animations.play('right');
@@ -517,13 +516,7 @@
               total += this.shelfW + unit;
           }
 
-          if (Phaser.Math.chanceRoll(50)) {
-              element = this.minaes.create(x + total + unit, game.world.height - this.solidH - this.minaH, 'mina');
-              setCommonProperties(element);
-              total += this.minaW + unit;
-          }
-
-          total += unit * 10;
+          total += unit * 8;
 
           if (!this.lectshape) {
               var xLecter = game.camera.x + w;
@@ -550,6 +543,14 @@
           }
 
           setCommonProperties(element);
+
+          total += unit * 11;
+
+          if (Phaser.Math.chanceRoll(50)) {
+              element = this.minaes.create(x + total + unit, game.world.height - this.solidH - this.minaH, 'mina');
+              setCommonProperties(element);
+              total += this.minaW + unit;
+          }
 
           //}
 
@@ -940,14 +941,6 @@
             //this.bitmapH = this.shape.bitmapH;
         }
 
-        
-
-        //var xLecter = this.player.position.x + this.playerW - 30;
-        //var yLecter = game.world.height - this.bitmapH - this.solidH - this.enemyH;
-
-
-
-
         this.lectshape.setPosition('center');
         this.shape.initializeBitmapData();
         this.lecter=this.lecters.create(xLecter,yLecter,this.shape.bmd);
@@ -979,7 +972,7 @@
 
 /**************SALVATAGGIO STATISTICHE******************/
 
-    GameState.prototype.saveStats = function (id,percent,errorUp,errorDown,dollarNPoint,symbol,strokes) {
+    GameState.prototype.saveStats = function (id,percent,errorUp,errorDown,totalPoint,dollarNPoint,symbol,strokes) {
      
 
         var json = {
@@ -988,6 +981,7 @@
             "matching": percent,
             "upperBoundExeceed": errorUp,
             "lowerBoundExeceed": errorDown,
+            "totalPoint": totalPoint,
             "dollarNRating": dollarNPoint,
             "symbols": [
               {
@@ -1038,13 +1032,14 @@
 
     GameState.prototype.confirmShape = function () {
 
-                var percent,errorUp,errorDown,dollarNPoint,strokes; 
+                var percent,errorUp,errorDown,totalPoint,dollarNPoint,strokes; 
         
                 if (this.shape) { 
                     var ris = this.shape.checkInputData();
                     percent = ris.matchPercent;
                      errorUp = ris.errorUp;
                      errorDown = ris.errorDown;
+                     totalPoint = ris.totalPoint;
                      dollarNPoint = ris.point;
                      strokes = ris.strokes;
 
@@ -1052,7 +1047,7 @@
                          if (ris.matchPercent > 60) {
                            scoreWord += 1;
                            var symbol = JsonObj.exercises[this.choseText].symbols[0].symbol;
-                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
+                             //this.saveStats(this.actualId, percent, errorUp, errorDown,totalPoint, dollarNPoint, symbol, strokes);
                            this.generateText();
                        } else {
                            this.shape.clearInputData();
@@ -1061,7 +1056,7 @@
                        if (ris.matchPercent > 60) {
                            var symbol = JsonObj.exercises[this.choseText].symbols[this.traceSymbol].symbol;
                            this.traceSymbol++;
-                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown,totalPoint, dollarNPoint, symbol, strokes);
                            this.colorSentenceLecter(this.shape.lecter);
                        } else {
                            this.shape.clearInputData();
@@ -1084,7 +1079,7 @@
                            var symbol = [];
                            for (var i = 0; i < JsonObj.exercises[this.choseText].symbols.length[i]; i++)
                                symbol[i] = JsonObj.exercises[this.choseText].symbols[i].symbol;
-                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown,totalPoint, dollarNPoint, symbol, strokes);
                        } else {
                            this.shape.clearInputData();
                        }
@@ -1092,7 +1087,7 @@
                        if (ris.type == this.lectshape.lecter && ris.point > 2) {
                            var symbol = JsonObj.exercises[this.choseText].symbols[this.traceSymbol].symbol;
                            this.traceSymbol++;
-                           //this.saveStats(this.actualId, percent, errorUp, errorDown, dollarNPoint, symbol, strokes);
+                           //this.saveStats(this.actualId, percent, errorUp, errorDown,totalPoint, dollarNPoint, symbol, strokes);
                            this.colorSentenceLecter(this.shape.lecter);
                        } else {
                            this.shape.clearInputData();
@@ -1126,13 +1121,16 @@
     }
 
      GameState.prototype.updateSpeed=function(){
-        if(updateTimer()%10==0){
-           if(this.dino_state==this.DINO.NORMAL){
-            if(this.playerV<450){
-             this.playerV+=1/3;
-            }
-          }
-        }
+         if ((game.camera.x % 251) >= 0 && (game.camera.x % 251) <= 7 && this.plusVelocity) {
+             if (this.dino_state == this.DINO.NORMAL) {
+                 this.plusVelocity = false;
+                 if (this.playerV < 450) {
+                     this.playerV += 3;
+                 }
+             }
+         }else if (!this.plusVelocity) {
+             if ((game.camera.x % 251) > 7) this.plusVelocity = true;
+         }
     }
 
     /*tra 100 e 250*/
@@ -1323,7 +1321,11 @@
        this.scoreTextCiliege = game.add.text(90, 161, '0', { fontSize: '200 px', fill: '#000' });      //stampo lo score attuale
        this.scoreTextCiliege.fixedToCamera = true;
 
-       this.scoreRecord = game.add.text(10, game.world.height - this.solidH/2, 'Record: ' + localStorage.getItem("Record"), { fontSize: '200 px', fill: '#000' });
+       if (localStorage.getItem("Record") != null) {
+           this.scoreRecord = game.add.text(10, game.world.height - this.solidH / 2, 'Record: ' + localStorage.getItem("Record"), { fontSize: '200 px', fill: '#000' });
+       } else {
+           this.scoreRecord = game.add.text(10, game.world.height - this.solidH / 2, 'Record: ' + '0', { fontSize: '200 px', fill: '#000' });
+       }
        this.scoreRecord.fixedToCamera = true;
       /*
        text[0]="PINI";
@@ -1393,14 +1395,15 @@
        this.background.fixedToCamera = true;                                                    
        this.ground.fixedToCamera = true;                                                         
        this.ground.scale.setTo(w /this.solidW,1);
-       game.camera.follow(this.player);                                                            
-       game.camera.deadzone = new Phaser.Rectangle(w / 2 + this.playerW / 2, 200, 0, 0);
+       game.camera.follow(this.player);
+       //game.camera.deadzone = new Phaser.Rectangle(w / 2 + this.playerW / 2, 200, 0, 0);
+       game.camera.deadzone = new Phaser.Rectangle(3 * w / 8, 200, 0, 0);
   }
 
   GameState.prototype.initializeElementParameter=function(){
        game.physics.arcade.enable(this.player);  
        this.player.body.bounce.y = 0.2;                                                  
-       this.player.body.gravity.y = 600;                                                      
+       this.player.body.gravity.y = 630;                                                      
        this.player.body.collideWorldBounds = true;                                                                                   
        this.player.body.velocity.x = this.playerV;
        this.player.animations.play('right');
