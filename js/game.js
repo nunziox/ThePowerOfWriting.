@@ -225,6 +225,7 @@
                 var y = game.input.activePointer.position.y;
 
                 if ((x >= (this.reservedArea.area[0].x - game.camera.x) && x <= (this.reservedArea.area[0].x_ - game.camera.x)) && (y >= this.reservedArea.area[0].y && y <= this.reservedArea.area[0].y_)) {
+                    this.shape.posX=this.player.position.x+this.playerW-30-game.camera.x;
                     this.turn = this.shape.captureInputData();
                 } else{
                     this.gturn= this.gesture.captureInputData();
