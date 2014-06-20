@@ -58,7 +58,6 @@ MenuState.prototype = {
       game.load.image('exitgame', 'assets/exitgame.png');
  
       /*Parte relativa al menu*/
-      game.load.image('star', 'assets/star.png');
       game.load.image('logo', 'assets/logo.png');
       game.load.image('exit', 'assets/exit.png');
       game.load.image('setting', 'assets/config.png');
@@ -70,11 +69,9 @@ MenuState.prototype = {
       game.load.image('ground', 'assets/solid.jpg');
       game.load.image('apple', 'assets/fruit.png');
       game.load.image('fumetto', 'assets/fumetto.jpg');
-      game.load.image('bullet', 'assets/bullet.png');
       game.load.image('life', 'assets/newlife.png');
       game.load.image('mina', 'assets/mina.png');
       game.load.image('platform', 'assets/platform.png');
-      game.load.image('diamond', 'assets/diamond.png');
       game.load.image('cloud', 'assets/cloud.png');
       game.load.image('banana', 'assets/banana.png');
       game.load.image('ciliege', 'assets/ciliege.png');
